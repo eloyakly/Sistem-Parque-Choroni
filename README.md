@@ -71,7 +71,7 @@ gasto_mes
 
 ```bash
 # 1. Clonar el repositorio
-git clone <url-del-repositorio>
+git clone https://github.com/eloyakly/Sistem-Parque-Choroni.git
 cd Sistem-Parque-Choroni
 
 # 2. Instalar dependencias PHP
