@@ -12,7 +12,7 @@ class TipoApartamentoController extends Controller
      */
     public function index()
     {
-        //
+        return view('tipos_apartamentos.index');
     }
 
     /**
@@ -20,7 +20,7 @@ class TipoApartamentoController extends Controller
      */
     public function create()
     {
-        //
+        return view('tipos_apartamentos.crear');
     }
 
     /**

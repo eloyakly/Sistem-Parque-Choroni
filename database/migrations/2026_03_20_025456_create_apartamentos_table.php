@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('apartamentos', function (Blueprint $table) {
             $table->id();
+            $table->string('numero')->unique(); // Ej: A-101
+            $table->foreignId('tipo_apartamento_id')->constrained('tipo_apartamentos');
+            $table->foreignId('propietario_id')->constrained('propietarios');
+            $table->decimal('deuda_actual', 15, 2)->default(0);
             $table->timestamps();
         });
     }

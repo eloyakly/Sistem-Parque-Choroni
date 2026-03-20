@@ -12,7 +12,7 @@ class PropietarioController extends Controller
      */
     public function index()
     {
-        //
+        return view('propietarios.index');
     }
 
     /**
@@ -20,7 +20,7 @@ class PropietarioController extends Controller
      */
     public function create()
     {
-        //
+        return view('propietarios.crear');
     }
 
     /**

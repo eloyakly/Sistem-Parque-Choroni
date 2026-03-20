@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Factura;
+use App\Models\GastoMes;
 use Illuminate\Http\Request;
 
-class FacturaController extends Controller
+class GastoMesController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return view('facturas.index');
+        //
     }
 
     /**
@@ -20,7 +20,7 @@ class FacturaController extends Controller
      */
     public function create()
     {
-        return view('facturas.crear');
+        //
     }
 
     /**
@@ -34,7 +34,7 @@ class FacturaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Factura $factura)
+    public function show(GastoMes $gastoMes)
     {
         //
     }
@@ -42,7 +42,7 @@ class FacturaController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Factura $factura)
+    public function edit(GastoMes $gastoMes)
     {
         //
     }
@@ -50,7 +50,7 @@ class FacturaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Factura $factura)
+    public function update(Request $request, GastoMes $gastoMes)
     {
         //
     }
@@ -58,7 +58,7 @@ class FacturaController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Factura $factura)
+    public function destroy(GastoMes $gastoMes)
     {
         //
     }

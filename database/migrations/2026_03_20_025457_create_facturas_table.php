@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('facturas', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('apartamento_id')->constrained('apartamentos');
+            $table->string('descripcion');
+            $table->decimal('monto_total', 15, 2);
+            $table->decimal('saldo_pendiente', 15, 2);
+            $table->enum('estado', ['no_pagado', 'pago_parcial', 'pagado'])->default('no_pagado');
+            $table->date('fecha_vencimiento');
             $table->timestamps();
         });
     }

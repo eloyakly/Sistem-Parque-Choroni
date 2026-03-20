@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tipo_apartamentos', function (Blueprint $table) {
+        Schema::create('gasto_detalles', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre'); // Ej: Penthouse, Estándar
-$table->decimal('alicuota', 8, 4); // Ej: 0.1250 (representa 12.5%)
+            $table->foreignId('gasto_mes_id')->constrained('gasto_mes')->onDelete('cascade');
+            $table->string('descripcion'); // Nombre del gasto
+            $table->decimal('monto', 15, 2);
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ $table->decimal('alicuota', 8, 4); // Ej: 0.1250 (representa 12.5%)
      */
     public function down(): void
     {
-        Schema::dropIfExists('tipo_apartamentos');
+        Schema::dropIfExists('gasto_detalles');
     }
 };

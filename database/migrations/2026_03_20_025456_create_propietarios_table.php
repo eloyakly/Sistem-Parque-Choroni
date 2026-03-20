@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('propietarios', function (Blueprint $table) {
             $table->id();
+            $table->string('nombre');
+$table->string('apellido');
+$table->string('cedula')->unique(); // Cédula, RIF o DNI
+$table->string('telefono')->nullable();
+$table->string('email')->unique();
             $table->timestamps();
         });
     }

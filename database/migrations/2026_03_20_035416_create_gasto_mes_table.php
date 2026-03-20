@@ -11,19 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tipo_apartamentos', function (Blueprint $table) {
+       Schema::create('gasto_mes', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre'); // Ej: Penthouse, Estándar
-$table->decimal('alicuota', 8, 4); // Ej: 0.1250 (representa 12.5%)
+            $table->string('mes_anio'); // Ej: "03-2026"
+            $table->decimal('total_gastos', 15, 2)->default(0);
+            $table->boolean('procesado')->default(false); // Para saber si ya se generaron las facturas
             $table->timestamps();
         });
-    }
+    }   
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('tipo_apartamentos');
+        Schema::dropIfExists('gasto_mes');
     }
 };

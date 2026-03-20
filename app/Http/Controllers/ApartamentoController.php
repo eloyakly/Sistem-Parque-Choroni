@@ -12,7 +12,7 @@ class ApartamentoController extends Controller
      */
     public function index()
     {
-        //
+        return view('apartamentos.index');
     }
 
     /**
@@ -20,7 +20,7 @@ class ApartamentoController extends Controller
      */
     public function create()
     {
-        //
+        return view('apartamentos.crear');
     }
 
     /**
@@ -44,7 +44,7 @@ class ApartamentoController extends Controller
      */
     public function edit(Apartamento $apartamento)
     {
-        //
+        return view('apartamentos.editar', compact('apartamento'));
     }
 
     /**

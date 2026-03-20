@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('pagos', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('apartamento_id')->constrained('apartamentos');
+            $table->decimal('monto', 15, 2);
+            $table->date('fecha_pago');
+            $table->string('referencia')->nullable(); // Número de transacción
+            $table->string('metodo_pago'); // Ej: Transferencia, Efectivo, Zelle
             $table->timestamps();
         });
     }
