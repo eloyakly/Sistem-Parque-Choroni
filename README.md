@@ -1,66 +1,192 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏢 Sistem Parque Choroni
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema de gestión de condominio desarrollado con **Laravel 12** y **CSS nativo**. Diseñado para uso diario por administradores de edificios, con una interfaz minimalista, elegante y soporte de **tema claro y oscuro**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🎯 Descripción
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Sistem Parque Choroni** permite a la administración de un condominio gestionar propietarios, apartamentos, gastos mensuales y la facturación de cuotas de condominio de manera organizada y eficiente.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+El flujo de facturación funciona en dos pasos:
 
-## Learning Laravel
+1. El administrador carga los **Gastos del Mes** (agua, vigilancia, reparaciones, etc.).
+2. Al generar una factura, solo selecciona el mes cargado y la **alícuota** del apartamento, y el sistema calcula automáticamente el monto a cobrar.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 🧱 Módulos del Sistema
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Módulo                   | Descripción                            |
+| :----------------------- | :------------------------------------- |
+| 🔐 **Acceso**            | Pantalla de inicio de sesión           |
+| 🏠 **Inicio**            | Dashboard con resumen estadístico      |
+| 👤 **Propietarios**      | Directorio de residentes               |
+| 🏢 **Apartamentos**      | Gestión de unidades (con Torre y Tipo) |
+| 📋 **Tipos de Inmueble** | Categorías con su alícuota base        |
+| 💰 **Gastos del Mes**    | Carga dinámica de gastos generales     |
+| 📄 **Facturas**          | Generación de recibos por alícuota     |
+| 💳 **Pagos**             | Registro de cobros recibidos           |
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🗃️ Base de Datos
 
-### Premium Partners
+### Orden de dependencias (migraciones)
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```
+propietarios
+tipo_apartamentos
+    └── apartamentos (torre, número, alícuota)
+            ├── facturas
+            └── pagos
+gasto_mes
+    └── gasto_detalles
+```
 
-## Contributing
+### Tablas principales
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Tabla               | Campos clave                                                                         |
+| :------------------ | :----------------------------------------------------------------------------------- |
+| `propietarios`      | nombre, apellido, cedula, telefono, email                                            |
+| `tipo_apartamentos` | nombre, alicuota                                                                     |
+| `apartamentos`      | torre, numero, tipo_apartamento_id, propietario_id, deuda_actual                     |
+| `facturas`          | apartamento_id, descripcion, monto_total, saldo_pendiente, estado, fecha_vencimiento |
+| `pagos`             | apartamento_id, monto, fecha_pago, referencia, metodo_pago                           |
+| `gasto_mes`         | mes_anio, total_gastos, procesado                                                    |
+| `gasto_detalles`    | gasto_mes_id, descripcion, monto                                                     |
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🚀 Instalación
 
-## Security Vulnerabilities
+### Requisitos
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- PHP >= 8.2
+- Node.js >= 18
+- MySQL / MariaDB
+- Composer
 
-## License
+### Pasos
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+# 1. Clonar el repositorio
+git clone <url-del-repositorio>
+cd Sistem-Parque-Choroni
+
+# 2. Instalar dependencias PHP
+composer install
+
+# 3. Instalar dependencias JS
+npm install
+
+# 4. Configurar el entorno
+cp .env.example .env
+php artisan key:generate
+
+# 5. Configurar la base de datos en .env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=parque
+DB_USERNAME=root
+DB_PASSWORD=
+
+# 6. Ejecutar migraciones
+php artisan migrate
+
+# 7. Iniciar los servidores de desarrollo
+php artisan serve   # Backend: http://localhost:8000
+npm run dev         # Frontend (Vite)
+```
+
+---
+
+## 🗂️ Estructura de Vistas
+
+```
+resources/views/
+├── acceso.blade.php                 # Inicio de sesión
+├── layouts/
+│   └── plantilla.blade.php          # Layout principal
+├── components/
+│   ├── navegacion_lateral.blade.php # Menú lateral
+│   └── navegacion_superior.blade.php# Barra superior + cambio de tema
+├── inicio/
+│   └── index.blade.php              # Dashboard
+├── propietarios/
+│   ├── index.blade.php
+│   └── crear.blade.php
+├── apartamentos/
+│   ├── index.blade.php
+│   └── crear.blade.php
+├── tipos_apartamentos/
+│   ├── index.blade.php
+│   └── crear.blade.php
+├── gastos_mensuales/
+│   ├── index.blade.php
+│   ├── crear.blade.php
+│   └── editar.blade.php
+├── facturas/
+│   ├── index.blade.php
+│   └── crear.blade.php
+└── pagos/
+    ├── index.blade.php
+    └── crear.blade.php
+```
+
+---
+
+## 🎨 Sistema de Diseño
+
+Los estilos se gestionan en `resources/css/app.css` usando **CSS nativo con variables** para soportar los dos temas:
+
+```css
+/* Tema Claro */
+:root { --color-fondo: #f8f9fa; --color-acentuar: #0984e3; ... }
+
+/* Tema Oscuro */
+[data-tema="oscuro"] { --color-fondo: #121212; --color-acentuar: #3498db; ... }
+```
+
+El tema se guarda en `localStorage` y se aplica automáticamente al recargar. El usuario lo cambia con el botón 🌓 en la barra superior.
+
+---
+
+## 🏷️ Convenciones del Proyecto
+
+- **Nombres en español**: vistas, componentes, clases CSS, rutas con nombre.
+- **Clases CSS en español**: `.boton`, `.boton-primario`, `.tarjeta`, `.barra-lateral`, `.item-menu`, etc.
+- **Rutas resource en español**: `/propietarios`, `/apartamentos`, `/gastos-mensuales`, etc.
+
+---
+
+## 📡 Rutas Disponibles
+
+| Método   | URI                   | Nombre                 | Descripción                  |
+| :------- | :-------------------- | :--------------------- | :--------------------------- |
+| GET      | `/`                   | —                      | Redirige al acceso           |
+| GET      | `/acceso`             | `login`                | Pantalla de inicio de sesión |
+| GET      | `/inicio`             | `inicio`               | Dashboard                    |
+| RESOURCE | `/propietarios`       | `propietarios.*`       | CRUD propietarios            |
+| RESOURCE | `/apartamentos`       | `apartamentos.*`       | CRUD apartamentos            |
+| RESOURCE | `/tipos-apartamentos` | `tipos-apartamentos.*` | CRUD tipos                   |
+| RESOURCE | `/gastos-mensuales`   | `gastos-mensuales.*`   | CRUD gastos                  |
+| RESOURCE | `/facturas`           | `facturas.*`           | CRUD facturas                |
+| RESOURCE | `/pagos`              | `pagos.*`              | CRUD pagos                   |
+
+---
+
+## 🛠️ Tecnologías
+
+- **Backend**: Laravel 12 (PHP 8.2+)
+- **Frontend**: Blade + CSS nativo + JavaScript vanilla
+- **Base de datos**: MySQL
+- **Bundler**: Vite
+- **Tipografía**: Inter (Google Fonts)
+
+---
+
+## 📄 Licencia
+
+Proyecto desarrollado para uso interno del Condominio **Parque Choroni**.
