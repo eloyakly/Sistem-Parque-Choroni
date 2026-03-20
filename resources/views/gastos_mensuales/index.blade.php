@@ -27,7 +27,7 @@
                     <td style="padding: 1rem;">$ 2,450.00</td>
                     <td style="padding: 1rem;">Agua, Vigilancia, Limpieza...</td>
                     <td style="padding: 1rem;">
-                        <button class="boton" style="background: none; color: var(--color-acentuar);">Editar Gastos</button>
+                        <a href="{{ route('gastos-mensuales.edit', 1) }}" class="boton" style="background: none; color: var(--color-acentuar);">Editar Gastos</a>
                     </td>
                 </tr>
             </tbody>

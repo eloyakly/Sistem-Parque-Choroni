@@ -16,4 +16,9 @@ class GastosMensualesController extends Controller
     {
         return view('gastos_mensuales.crear');
     }
+
+    public function edit($id)
+    {
+        return view('gastos_mensuales.editar');
+    }
 }

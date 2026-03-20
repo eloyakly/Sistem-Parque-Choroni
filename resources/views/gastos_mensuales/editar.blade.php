@@ -1,11 +1,19 @@
 @extends('layouts.plantilla')
 
-@section('titulo', 'Cargar Gastos del Mes')
+@section('titulo', 'Editar Gastos del Mes')
 
 @section('contenido')
 <div class="tarjeta">
-    <h1>Definir Gastos de Mensualidad</h1>
-    <p style="color: var(--color-texto-secundario);">Estos montos servirán de base para las facturas individuales del mes seleccionado.</p>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>Editar Gastos del Mes</h1>
+            <p style="color: var(--color-texto-secundario);">Modifique los conceptos y montos del período seleccionado.</p>
+        </div>
+        {{-- Indicador de estado --}}
+        <span id="badge-estado" style="padding: 0.4rem 1rem; background: #fff3e0; color: #e65100; border-radius: 8px; font-weight: 600; font-size: 0.85rem;">
+            Sin procesar
+        </span>
+    </div>
 
     <form action="{{ route('gastos-mensuales.index') }}" method="GET" style="margin-top: 2rem;">
 
@@ -13,25 +21,25 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <label style="font-weight: 500;">Mes Correspondiente</label>
-                <input type="month" name="mes_anio" value="{{ date('Y-m') }}"
+                <input type="month" name="mes_anio" value="2026-03"
                     style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto);">
             </div>
 
-            {{-- ⚠ Campo visual: "Responsable de carga" — NO existe en la BD, solo referencia interna --}}
+            {{-- ⚠ Campo visual: "Nota interna" — NO existe en la BD --}}
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <label style="font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
-                    Responsable de Carga
+                    Nota Interna
                     <span style="font-size: 0.7rem; background: #fff3e0; color: #e65100; padding: 0.15rem 0.4rem; border-radius: 4px;">Solo visual</span>
                 </label>
-                <input type="text" placeholder="Ej: Administración" disabled
-                    style="padding: 0.8rem; border-radius: 8px; border: 1px dashed var(--color-borde); background: var(--color-acentuar-suave); color: var(--color-texto-secundario); cursor: not-allowed;">
-                <small style="color: var(--color-texto-secundario);">Este campo es referencial, no se guarda en la base de datos.</small>
+                <textarea rows="2" placeholder="Ej: Reconexión de agua por mantenimiento..." disabled
+                    style="padding: 0.8rem; border-radius: 8px; border: 1px dashed var(--color-borde); background: var(--color-acentuar-suave); color: var(--color-texto-secundario); cursor: not-allowed; font-family: inherit; resize: none;"></textarea>
+                <small style="color: var(--color-texto-secundario);">Campo referencial, no se guarda en la base de datos.</small>
             </div>
         </div>
 
         {{-- ── Tabla de Conceptos ── --}}
         <div style="margin-bottom: 2rem;">
-            <h3 style="margin-bottom: 1rem;">Detalle de Gastos Generales</h3>
+            <h3 style="margin-bottom: 1rem;">Detalle de Conceptos</h3>
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="text-align: left; border-bottom: 2px solid var(--color-borde);">
@@ -41,6 +49,7 @@
                     </tr>
                 </thead>
                 <tbody id="cuerpo-gastos">
+                    {{-- Filas precargadas (simuladas) --}}
                     <tr class="fila-gasto" style="border-bottom: 1px solid var(--color-borde);">
                         <td style="padding: 0.8rem;">
                             <input type="text" name="descripcion[]" value="Vigilancia Privada"
@@ -50,7 +59,11 @@
                             <input type="number" name="monto[]" step="0.01" value="1200" class="entrada-monto"
                                 style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;">
                         </td>
-                        <td></td>
+                        <td style="padding: 0.8rem; text-align: center;">
+                            <button type="button" class="btn-eliminar-fila"
+                                style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:1.3rem;line-height:1;"
+                                title="Eliminar">&times;</button>
+                        </td>
                     </tr>
                     <tr class="fila-gasto" style="border-bottom: 1px solid var(--color-borde);">
                         <td style="padding: 0.8rem;">
@@ -61,7 +74,11 @@
                             <input type="number" name="monto[]" step="0.01" value="450" class="entrada-monto"
                                 style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;">
                         </td>
-                        <td></td>
+                        <td style="padding: 0.8rem; text-align: center;">
+                            <button type="button" class="btn-eliminar-fila"
+                                style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:1.3rem;line-height:1;"
+                                title="Eliminar">&times;</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -80,7 +97,7 @@
         </div>
 
         <div style="display: flex; gap: 1rem;">
-            <button type="submit" class="boton boton-primario">Guardar Gastos del Mes</button>
+            <button type="submit" class="boton boton-primario">Guardar Cambios</button>
             <a href="{{ route('gastos-mensuales.index') }}" class="boton" style="background: var(--color-borde);">Cancelar</a>
         </div>
     </form>
@@ -101,20 +118,25 @@
         totalMes.textContent = '$ ' + total.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
-    /* ── Vincular eventos a los inputs iniciales ── */
-    cuerpoGastos.querySelectorAll('.entrada-monto').forEach(e => {
-        e.addEventListener('input', calcularTotal);
-    });
-    calcularTotal(); // total inicial
+    /* ── Vincular eliminar en filas existentes ── */
+    function vincularEliminar(fila) {
+        const btn = fila.querySelector('.btn-eliminar-fila');
+        if (btn) btn.addEventListener('click', () => { fila.remove(); calcularTotal(); });
+        const monto = fila.querySelector('.entrada-monto');
+        if (monto) monto.addEventListener('input', calcularTotal);
+    }
 
-    /* ── Agregar fila ── */
+    cuerpoGastos.querySelectorAll('.fila-gasto').forEach(vincularEliminar);
+    calcularTotal();
+
+    /* ── Agregar fila nueva ── */
     btnAgregar.addEventListener('click', () => {
         const fila = document.createElement('tr');
         fila.className = 'fila-gasto';
         fila.style.borderBottom = '1px solid var(--color-borde)';
         fila.innerHTML = `
             <td style="padding:0.8rem;">
-                <input type="text" name="descripcion[]" placeholder="Ej: Limpieza de áreas comunes" style="${estiloInput}">
+                <input type="text" name="descripcion[]" placeholder="Ej: Reparación ascensor" style="${estiloInput}">
             </td>
             <td style="padding:0.8rem;">
                 <input type="number" name="monto[]" step="0.01" placeholder="0.00" class="entrada-monto" style="${estiloInput}">
@@ -122,16 +144,11 @@
             <td style="padding:0.8rem;text-align:center;">
                 <button type="button" class="btn-eliminar-fila"
                     style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:1.3rem;line-height:1;"
-                    title="Eliminar fila">&times;</button>
+                    title="Eliminar">&times;</button>
             </td>
         `;
         cuerpoGastos.appendChild(fila);
-
-        fila.querySelector('.entrada-monto').addEventListener('input', calcularTotal);
-        fila.querySelector('.btn-eliminar-fila').addEventListener('click', () => {
-            fila.remove();
-            calcularTotal();
-        });
+        vincularEliminar(fila);
     });
 </script>
 @endsection
