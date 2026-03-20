@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tipo_apartamentos', function (Blueprint $table) {
-            $table->id();
-            $table->string('nombre'); // Ej: Penthouse, Estándar
-$table->decimal('alicuota', 8, 4); // Ej: 0.1250 (representa 12.5%)
-            $table->timestamps();
-        });
+       Schema::create('tipo_apartamentos', function (Blueprint $table) {
+    $table->id(); // Crea un BigInteger Unsigned
+    $table->string('nombre');
+    $table->decimal('alicuota', 8, 4);
+    $table->timestamps();
+});
     }
 
     /**
