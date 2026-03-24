@@ -7,13 +7,31 @@
     <h1>Definir Gastos de Mensualidad</h1>
     <p style="color: var(--color-texto-secundario);">Estos montos servirán de base para las facturas individuales del mes seleccionado.</p>
 
-    <form action="{{ route('gastos-mensuales.index') }}" method="GET" style="margin-top: 2rem;">
+    @if($errors->any())
+        <div style="background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+            <strong>Corrija los siguientes errores:</strong>
+            <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div style="background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+            ⚠️ {{ session('error') }}
+        </div>
+    @endif
+
+    <form action="{{ route('gastos-mensuales.store') }}" method="POST" style="margin-top: 2rem;">
+        @csrf
 
         {{-- ── Cabecera ── --}}
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <label style="font-weight: 500;">Mes Correspondiente</label>
-                <input type="month" name="mes_anio" value="{{ date('Y-m') }}"
+                <input type="month" name="mes_anio" value="{{ old('mes_anio', date('Y-m')) }}"
                     style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto);">
             </div>
 
@@ -41,28 +59,40 @@
                     </tr>
                 </thead>
                 <tbody id="cuerpo-gastos">
-                    <tr class="fila-gasto" style="border-bottom: 1px solid var(--color-borde);">
-                        <td style="padding: 0.8rem;">
-                            <input type="text" name="descripcion[]" value="Vigilancia Privada"
-                                style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;">
-                        </td>
-                        <td style="padding: 0.8rem;">
-                            <input type="number" name="monto[]" step="0.01" value="1200" class="entrada-monto"
-                                style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;">
-                        </td>
-                        <td></td>
-                    </tr>
-                    <tr class="fila-gasto" style="border-bottom: 1px solid var(--color-borde);">
-                        <td style="padding: 0.8rem;">
-                            <input type="text" name="descripcion[]" value="Servicio de Agua"
-                                style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;">
-                        </td>
-                        <td style="padding: 0.8rem;">
-                            <input type="number" name="monto[]" step="0.01" value="450" class="entrada-monto"
-                                style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;">
-                        </td>
-                        <td></td>
-                    </tr>
+                    @if(old('descripcion'))
+                        @foreach(old('descripcion') as $index => $descripcion)
+                        <tr class="fila-gasto" style="border-bottom: 1px solid var(--color-borde);">
+                            <td style="padding: 0.8rem;">
+                                <input type="text" name="descripcion[]" value="{{ $descripcion }}"
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
+                            </td>
+                            <td style="padding: 0.8rem;">
+                                <input type="number" name="monto[]" step="0.01" min="0.01" value="{{ old('monto')[$index] }}" class="entrada-monto"
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
+                            </td>
+                            <td style="padding: 0.8rem; text-align: center;">
+                                <button type="button" class="btn-eliminar-fila"
+                                    style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.3rem; line-height: 1;" title="Eliminar fila">&times;</button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    @else
+                        {{-- Filas iniciales por defecto --}}
+                        <tr class="fila-gasto" style="border-bottom: 1px solid var(--color-borde);">
+                            <td style="padding: 0.8rem;">
+                                <input type="text" name="descripcion[]" value="Vigilancia Privada"
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
+                            </td>
+                            <td style="padding: 0.8rem;">
+                                <input type="number" name="monto[]" step="0.01" min="0.01" value="0.00" class="entrada-monto"
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
+                            </td>
+                            <td style="padding: 0.8rem; text-align: center;">
+                                <button type="button" class="btn-eliminar-fila"
+                                    style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.3rem; line-height: 1;" title="Eliminar fila">&times;</button>
+                            </td>
+                        </tr>
+                    @endif
                 </tbody>
             </table>
 
@@ -101,10 +131,27 @@
         totalMes.textContent = '$ ' + total.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
+    function adjuntarEventosEliminar() {
+        cuerpoGastos.querySelectorAll('.btn-eliminar-fila').forEach(btn => {
+            btn.onclick = function() {
+                if(cuerpoGastos.querySelectorAll('.fila-gasto').length > 1) {
+                    this.closest('tr').remove();
+                    calcularTotal();
+                } else {
+                    alert('Debe haber al menos un concepto de gasto.');
+                }
+            };
+        });
+    }
+
     /* ── Vincular eventos a los inputs iniciales ── */
-    cuerpoGastos.querySelectorAll('.entrada-monto').forEach(e => {
-        e.addEventListener('input', calcularTotal);
+    cuerpoGastos.addEventListener('input', function(e) {
+        if(e.target.classList.contains('entrada-monto')) {
+            calcularTotal();
+        }
     });
+    
+    adjuntarEventosEliminar();
     calcularTotal(); // total inicial
 
     /* ── Agregar fila ── */
@@ -114,10 +161,10 @@
         fila.style.borderBottom = '1px solid var(--color-borde)';
         fila.innerHTML = `
             <td style="padding:0.8rem;">
-                <input type="text" name="descripcion[]" placeholder="Ej: Limpieza de áreas comunes" style="${estiloInput}">
+                <input type="text" name="descripcion[]" placeholder="Ej: Nuevo concepto" style="${estiloInput}" required>
             </td>
             <td style="padding:0.8rem;">
-                <input type="number" name="monto[]" step="0.01" placeholder="0.00" class="entrada-monto" style="${estiloInput}">
+                <input type="number" name="monto[]" step="0.01" min="0.01" placeholder="0.00" class="entrada-monto" style="${estiloInput}" required>
             </td>
             <td style="padding:0.8rem;text-align:center;">
                 <button type="button" class="btn-eliminar-fila"
@@ -126,12 +173,7 @@
             </td>
         `;
         cuerpoGastos.appendChild(fila);
-
-        fila.querySelector('.entrada-monto').addEventListener('input', calcularTotal);
-        fila.querySelector('.btn-eliminar-fila').addEventListener('click', () => {
-            fila.remove();
-            calcularTotal();
-        });
+        adjuntarEventosEliminar();
     });
 </script>
 @endsection

@@ -3,63 +3,133 @@
 namespace App\Http\Controllers;
 
 use App\Models\Apartamento;
+use App\Models\Propietario;
+use App\Models\TipoApartamento;
 use Illuminate\Http\Request;
 
 class ApartamentoController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Lista todos los apartamentos con opción a filtrado.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('apartamentos.index');
+        $query = Apartamento::with(['tipo', 'propietario']);
+
+        if ($request->filled('buscar')) {
+            $buscar = $request->buscar;
+            $query->where('numero', 'LIKE', "%$buscar%")
+                  ->orWhere('torre', 'LIKE', "%$buscar%")
+                  ->orWhereHas('propietario', function($q) use ($buscar) {
+                      $q->where('nombre', 'LIKE', "%$buscar%")
+                        ->orWhere('apellido', 'LIKE', "%$buscar%")
+                        ->orWhere('cedula', 'LIKE', "%$buscar%");
+                  });
+        }
+
+        $apartamentos = $query->get();
+        return view('apartamentos.index', compact('apartamentos'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Muestra el formulario para crear un apartamento.
      */
     public function create()
     {
-        return view('apartamentos.crear');
+        $propietarios = Propietario::orderBy('apellido')->get();
+        $tipos        = TipoApartamento::orderBy('nombre')->get();
+        return view('apartamentos.crear', compact('propietarios', 'tipos'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Guarda un nuevo apartamento en la base de datos.
      */
     public function store(Request $request)
     {
-        //
+        $datos = $request->validate([
+            'torre'                => 'required|string|in:Torre 1,Torre 2,Torre 3,Torre 4',
+            'numero'               => 'required|string|max:20',
+            'tipo_apartamento_id'  => 'required|exists:tipo_apartamentos,id',
+            'propietario_id'       => 'required|exists:propietarios,id',
+            'deuda_actual'         => 'nullable|numeric|min:0',
+        ], [
+            'torre.required'               => 'Debe seleccionar una torre o bloque.',
+            'torre.in'                     => 'La torre seleccionada no es válida.',
+            'numero.required'              => 'El número del inmueble es obligatorio.',
+            'tipo_apartamento_id.required' => 'Debe seleccionar un tipo de inmueble.',
+            'tipo_apartamento_id.exists'   => 'El tipo de inmueble seleccionado no es válido.',
+            'propietario_id.required'      => 'Debe seleccionar un propietario.',
+            'propietario_id.exists'        => 'El propietario seleccionado no es válido.',
+            'deuda_actual.numeric'         => 'La deuda debe ser un número.',
+            'deuda_actual.min'             => 'La deuda no puede ser negativa.',
+        ]);
+
+        $datos['deuda_actual'] = $datos['deuda_actual'] ?? 0;
+
+        Apartamento::create($datos);
+
+        return redirect()->route('apartamentos.index')
+            ->with('exito', 'Apartamento registrado correctamente.');
     }
 
     /**
-     * Display the specified resource.
+     * Muestra el detalle de un apartamento.
      */
     public function show(Apartamento $apartamento)
     {
-        //
+        $apartamento->load(['tipo', 'propietario']);
+        return view('apartamentos.ver', compact('apartamento'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Muestra el formulario de edición.
      */
     public function edit(Apartamento $apartamento)
     {
-        return view('apartamentos.editar', compact('apartamento'));
+        $propietarios = Propietario::orderBy('apellido')->get();
+        $tipos        = TipoApartamento::orderBy('nombre')->get();
+        return view('apartamentos.editar', compact('apartamento', 'propietarios', 'tipos'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualiza los datos de un apartamento.
      */
     public function update(Request $request, Apartamento $apartamento)
     {
-        //
+        $datos = $request->validate([
+            'torre'                => 'required|string|in:Torre 1,Torre 2,Torre 3,Torre 4',
+            'numero'               => 'required|string|max:20',
+            'tipo_apartamento_id'  => 'required|exists:tipo_apartamentos,id',
+            'propietario_id'       => 'required|exists:propietarios,id',
+            'deuda_actual'         => 'nullable|numeric|min:0',
+        ], [
+            'torre.required'               => 'Debe seleccionar una torre o bloque.',
+            'torre.in'                     => 'La torre seleccionada no es válida.',
+            'numero.required'              => 'El número del inmueble es obligatorio.',
+            'tipo_apartamento_id.required' => 'Debe seleccionar un tipo de inmueble.',
+            'tipo_apartamento_id.exists'   => 'El tipo de inmueble seleccionado no es válido.',
+            'propietario_id.required'      => 'Debe seleccionar un propietario.',
+            'propietario_id.exists'        => 'El propietario seleccionado no es válido.',
+            'deuda_actual.numeric'         => 'La deuda debe ser un número.',
+            'deuda_actual.min'             => 'La deuda no puede ser negativa.',
+        ]);
+
+        $datos['deuda_actual'] = $datos['deuda_actual'] ?? 0;
+
+        $apartamento->update($datos);
+
+        return redirect()->route('apartamentos.index')
+            ->with('exito', 'Apartamento actualizado correctamente.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Elimina un apartamento.
      */
     public function destroy(Apartamento $apartamento)
     {
-        //
+        $apartamento->delete();
+
+        return redirect()->route('apartamentos.index')
+            ->with('exito', 'Apartamento eliminado correctamente.');
     }
 }

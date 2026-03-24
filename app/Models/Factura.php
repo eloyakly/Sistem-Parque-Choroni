@@ -26,10 +26,6 @@ class Factura extends Model
         return $this->belongsTo(Apartamento::class);
     }
 
-    public function pagos()
-    {
-        return $this->hasMany(Pago::class);
-    }
 
     // Scope para filtrar solo las que deben dinero
     public function scopePendientes($query)

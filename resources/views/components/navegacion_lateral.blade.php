@@ -21,8 +21,11 @@
         <a href="{{ url('/facturas') }}" class="item-menu {{ Request::is('facturas*') ? 'activo' : '' }}">
             <span>📄 Facturas</span>
         </a>
-        <a href="{{ url('/pagos') }}" class="item-menu {{ Request::is('pagos*') ? 'activo' : '' }}">
+        <a href="{{ url('/pagos') }}" class="item-menu {{ Request::is('pagos') || Request::is('pagos/create*') ? 'activo' : '' }}">
             <span>💳 Pagos</span>
+        </a>
+        <a href="{{ route('pagos.deudores') }}" class="item-menu {{ Request::is('deudores*') ? 'activo' : '' }}">
+            <span>⚠️ Deudores</span>
         </a>
     </nav>
 </aside>

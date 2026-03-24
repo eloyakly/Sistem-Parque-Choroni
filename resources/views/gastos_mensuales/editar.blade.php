@@ -4,42 +4,42 @@
 
 @section('contenido')
 <div class="tarjeta">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-            <h1>Editar Gastos del Mes</h1>
-            <p style="color: var(--color-texto-secundario);">Modifique los conceptos y montos del período seleccionado.</p>
-        </div>
-        {{-- Indicador de estado --}}
-        <span id="badge-estado" style="padding: 0.4rem 1rem; background: #fff3e0; color: #e65100; border-radius: 8px; font-weight: 600; font-size: 0.85rem;">
-            Sin procesar
-        </span>
-    </div>
+    <h1>Editar Gastos de Mensualidad</h1>
+    <p style="color: var(--color-texto-secundario);">Ajuste los gastos comunes aplcables. Solo es posible editar si las facturas del mes no se han procesado.</p>
 
-    <form action="{{ route('gastos-mensuales.index') }}" method="GET" style="margin-top: 2rem;">
+    @if($errors->any())
+        <div style="background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+            <strong>Corrija los siguientes errores:</strong>
+            <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div style="background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+            ⚠️ {{ session('error') }}
+        </div>
+    @endif
+
+    <form action="{{ route('gastos-mensuales.update', $gastoMes->id) }}" method="POST" style="margin-top: 2rem;">
+        @csrf
+        @method('PUT')
 
         {{-- ── Cabecera ── --}}
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <label style="font-weight: 500;">Mes Correspondiente</label>
-                <input type="month" name="mes_anio" value="2026-03"
+                <input type="month" name="mes_anio" value="{{ old('mes_anio', $gastoMes->mes_anio) }}"
                     style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto);">
-            </div>
-
-            {{-- ⚠ Campo visual: "Nota interna" — NO existe en la BD --}}
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <label style="font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
-                    Nota Interna
-                    <span style="font-size: 0.7rem; background: #fff3e0; color: #e65100; padding: 0.15rem 0.4rem; border-radius: 4px;">Solo visual</span>
-                </label>
-                <textarea rows="2" placeholder="Ej: Reconexión de agua por mantenimiento..." disabled
-                    style="padding: 0.8rem; border-radius: 8px; border: 1px dashed var(--color-borde); background: var(--color-acentuar-suave); color: var(--color-texto-secundario); cursor: not-allowed; font-family: inherit; resize: none;"></textarea>
-                <small style="color: var(--color-texto-secundario);">Campo referencial, no se guarda en la base de datos.</small>
             </div>
         </div>
 
         {{-- ── Tabla de Conceptos ── --}}
         <div style="margin-bottom: 2rem;">
-            <h3 style="margin-bottom: 1rem;">Detalle de Conceptos</h3>
+            <h3 style="margin-bottom: 1rem;">Detalle de Gastos Generales</h3>
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="text-align: left; border-bottom: 2px solid var(--color-borde);">
@@ -49,37 +49,41 @@
                     </tr>
                 </thead>
                 <tbody id="cuerpo-gastos">
-                    {{-- Filas precargadas (simuladas) --}}
-                    <tr class="fila-gasto" style="border-bottom: 1px solid var(--color-borde);">
-                        <td style="padding: 0.8rem;">
-                            <input type="text" name="descripcion[]" value="Vigilancia Privada"
-                                style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;">
-                        </td>
-                        <td style="padding: 0.8rem;">
-                            <input type="number" name="monto[]" step="0.01" value="1200" class="entrada-monto"
-                                style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;">
-                        </td>
-                        <td style="padding: 0.8rem; text-align: center;">
-                            <button type="button" class="btn-eliminar-fila"
-                                style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:1.3rem;line-height:1;"
-                                title="Eliminar">&times;</button>
-                        </td>
-                    </tr>
-                    <tr class="fila-gasto" style="border-bottom: 1px solid var(--color-borde);">
-                        <td style="padding: 0.8rem;">
-                            <input type="text" name="descripcion[]" value="Servicio de Agua"
-                                style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;">
-                        </td>
-                        <td style="padding: 0.8rem;">
-                            <input type="number" name="monto[]" step="0.01" value="450" class="entrada-monto"
-                                style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;">
-                        </td>
-                        <td style="padding: 0.8rem; text-align: center;">
-                            <button type="button" class="btn-eliminar-fila"
-                                style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:1.3rem;line-height:1;"
-                                title="Eliminar">&times;</button>
-                        </td>
-                    </tr>
+                    @if(old('descripcion'))
+                        @foreach(old('descripcion') as $index => $descripcion)
+                        <tr class="fila-gasto" style="border-bottom: 1px solid var(--color-borde);">
+                            <td style="padding: 0.8rem;">
+                                <input type="text" name="descripcion[]" value="{{ $descripcion }}"
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
+                            </td>
+                            <td style="padding: 0.8rem;">
+                                <input type="number" name="monto[]" step="0.01" min="0.01" value="{{ old('monto')[$index] }}" class="entrada-monto"
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
+                            </td>
+                            <td style="padding: 0.8rem; text-align: center;">
+                                <button type="button" class="btn-eliminar-fila"
+                                    style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.3rem; line-height: 1;" title="Eliminar fila">&times;</button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    @else
+                        @foreach($gastoMes->detalles as $detalle)
+                        <tr class="fila-gasto" style="border-bottom: 1px solid var(--color-borde);">
+                            <td style="padding: 0.8rem;">
+                                <input type="text" name="descripcion[]" value="{{ $detalle->descripcion }}"
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
+                            </td>
+                            <td style="padding: 0.8rem;">
+                                <input type="number" name="monto[]" step="0.01" min="0.01" value="{{ $detalle->monto }}" class="entrada-monto"
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
+                            </td>
+                            <td style="padding: 0.8rem; text-align: center;">
+                                <button type="button" class="btn-eliminar-fila"
+                                    style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.3rem; line-height: 1;" title="Eliminar fila">&times;</button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    @endif
                 </tbody>
             </table>
 
@@ -93,11 +97,11 @@
         <div style="display: flex; justify-content: flex-end; align-items: center; gap: 1rem;
                     border-top: 2px solid var(--color-borde); padding-top: 1.5rem; margin-bottom: 2rem;">
             <span style="font-size: 1.2rem; font-weight: 600;">Total del Mes:</span>
-            <span id="total-mes" style="font-size: 1.5rem; font-weight: bold; color: var(--color-acentuar);">$ 0.00</span>
+            <span id="total-mes" style="font-size: 1.5rem; font-weight: bold; color: var(--color-acentuar);">$ {{ number_format($gastoMes->total_gastos, 2) }}</span>
         </div>
 
         <div style="display: flex; gap: 1rem;">
-            <button type="submit" class="boton boton-primario">Guardar Cambios</button>
+            <button type="submit" class="boton boton-primario">Actualizar Gastos del Mes</button>
             <a href="{{ route('gastos-mensuales.index') }}" class="boton" style="background: var(--color-borde);">Cancelar</a>
         </div>
     </form>
@@ -110,7 +114,6 @@
 
     const estiloInput   = 'width:100%;padding:0.5rem;border:1px solid var(--color-borde);border-radius:4px;background:transparent;color:inherit;';
 
-    /* ── Calcular total ── */
     function calcularTotal() {
         const entradas = cuerpoGastos.querySelectorAll('.entrada-monto');
         let total = 0;
@@ -118,37 +121,47 @@
         totalMes.textContent = '$ ' + total.toLocaleString('en-US', { minimumFractionDigits: 2 });
     }
 
-    /* ── Vincular eliminar en filas existentes ── */
-    function vincularEliminar(fila) {
-        const btn = fila.querySelector('.btn-eliminar-fila');
-        if (btn) btn.addEventListener('click', () => { fila.remove(); calcularTotal(); });
-        const monto = fila.querySelector('.entrada-monto');
-        if (monto) monto.addEventListener('input', calcularTotal);
+    function adjuntarEventosEliminar() {
+        cuerpoGastos.querySelectorAll('.btn-eliminar-fila').forEach(btn => {
+            btn.onclick = function() {
+                if(cuerpoGastos.querySelectorAll('.fila-gasto').length > 1) {
+                    this.closest('tr').remove();
+                    calcularTotal();
+                } else {
+                    alert('Debe haber al menos un concepto de gasto.');
+                }
+            };
+        });
     }
 
-    cuerpoGastos.querySelectorAll('.fila-gasto').forEach(vincularEliminar);
+    cuerpoGastos.addEventListener('input', function(e) {
+        if(e.target.classList.contains('entrada-monto')) {
+            calcularTotal();
+        }
+    });
+    
+    adjuntarEventosEliminar();
     calcularTotal();
 
-    /* ── Agregar fila nueva ── */
     btnAgregar.addEventListener('click', () => {
         const fila = document.createElement('tr');
         fila.className = 'fila-gasto';
         fila.style.borderBottom = '1px solid var(--color-borde)';
         fila.innerHTML = `
             <td style="padding:0.8rem;">
-                <input type="text" name="descripcion[]" placeholder="Ej: Reparación ascensor" style="${estiloInput}">
+                <input type="text" name="descripcion[]" placeholder="Ej: Nuevo concepto" style="${estiloInput}" required>
             </td>
             <td style="padding:0.8rem;">
-                <input type="number" name="monto[]" step="0.01" placeholder="0.00" class="entrada-monto" style="${estiloInput}">
+                <input type="number" name="monto[]" step="0.01" min="0.01" placeholder="0.00" class="entrada-monto" style="${estiloInput}" required>
             </td>
             <td style="padding:0.8rem;text-align:center;">
                 <button type="button" class="btn-eliminar-fila"
                     style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:1.3rem;line-height:1;"
-                    title="Eliminar">&times;</button>
+                    title="Eliminar fila">&times;</button>
             </td>
         `;
         cuerpoGastos.appendChild(fila);
-        vincularEliminar(fila);
+        adjuntarEventosEliminar();
     });
 </script>
 @endsection
