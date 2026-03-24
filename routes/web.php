@@ -33,4 +33,5 @@ Route::post('/facturas/masiva', [FacturaController::class, 'storeMasivo'])->name
 Route::resource('/facturas', FacturaController::class);
 
 Route::get('/deudores', [PagoController::class, 'deudores'])->name('pagos.deudores');
+Route::post('/pagos/abonar-deuda', [PagoController::class, 'abonarDeuda'])->name('pagos.abonar');
 Route::resource('/pagos', PagoController::class);

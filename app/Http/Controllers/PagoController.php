@@ -128,6 +128,72 @@ class PagoController extends Controller
     }
 
     /**
+     * Procesar un abono inteligente desde el Panel de Deudores
+     */
+    public function abonarDeuda(Request $request)
+    {
+        $request->validate([
+            'apartamento_id' => 'required|exists:apartamentos,id',
+            'monto'          => 'required|numeric|min:0.01',
+            'metodo_pago'    => 'required|string',
+            'referencia'     => 'nullable|string|max:255',
+            'fecha_pago'     => 'required|date|before_or_equal:today',
+        ], [
+            'monto.required' => 'Debe proveer un monto de abono.',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $apartamento = Apartamento::findOrFail($request->apartamento_id);
+            $montoAbono = $request->monto;
+
+            // 1. Crear el registro general de pago asociado al apartamento
+            Pago::create([
+                'apartamento_id' => $apartamento->id,
+                'monto'          => $montoAbono,
+                'fecha_pago'     => $request->fecha_pago,
+                'referencia'     => $request->referencia,
+                'metodo_pago'    => $request->metodo_pago,
+            ]);
+
+            // 2. Descontar la deuda actual global del apartamento
+            $apartamento->decrement('deuda_actual', $montoAbono);
+
+            // 3. Obtener facturas pendientes (más antiguas primero) para saldarlas en cascada
+            $facturasPendientes = Factura::where('apartamento_id', $apartamento->id)
+                                         ->whereIn('estado', ['no_pagado', 'pago_parcial'])
+                                         ->orderBy('fecha_vencimiento', 'asc')
+                                         ->get();
+            
+            $montoRestante = $montoAbono;
+            foreach ($facturasPendientes as $factura) {
+                if ($montoRestante <= 0) break;
+
+                if ($montoRestante >= $factura->saldo_pendiente) {
+                    $montoRestante -= $factura->saldo_pendiente;
+                    $factura->update([
+                        'saldo_pendiente' => 0,
+                        'estado'          => 'pagado'
+                    ]);
+                } else {
+                    $factura->update([
+                        'saldo_pendiente' => $factura->saldo_pendiente - $montoRestante,
+                        'estado'          => 'pago_parcial'
+                    ]);
+                    $montoRestante = 0;
+                }
+            }
+
+            DB::commit();
+            return redirect()->back()->with('exito', 'Abono registrado con éxito. El pago fue debitado de la deuda total y aplicado a sus facturas pendientes en orden de antigüedad.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Ocurrió un error al procesar el abono: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(Pago $pago)
