@@ -81,11 +81,12 @@
                                 <span style="padding: 0.2rem 0.6rem; background: #ffcdd2; color: #c62828; border-radius: 4px; font-size: 0.85rem;">No Pagado</span>
                             @endif
                         </td>
-                        <td style="padding: 1rem;">
-                            <form action="{{ route('facturas.destroy', $factura) }}" method="POST" onsubmit="return confirm('¿Está seguro de anular esta factura? Se restaurará el saldo a favor del apartamento.')">
+                        <td style="padding: 1rem; display: flex; gap: 0.5rem; align-items: center;">
+                            <button type="button" class="boton boton-primario" onclick="verFactura('{{ route('facturas.show', $factura->id) }}')" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;">Ver</button>
+                            <form action="{{ route('facturas.destroy', $factura) }}" method="POST" onsubmit="return confirm('¿Está seguro de anular esta factura? Se restaurará el saldo a favor del apartamento.')" style="margin: 0;">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="boton" style="background: none; color: #dc3545;">Anular</button>
+                                <button type="submit" class="boton" style="background: none; color: #dc3545; padding: 0.3rem; font-size: 0.85rem;">Anular</button>
                             </form>
                         </td>
                     </tr>
@@ -94,4 +95,21 @@
             </table>
         @endif
     </div>
+
+    <!-- Modal para ver factura -->
+    <dialog id="modalVerFactura" style="padding: 1.5rem; border-radius: 12px; border: 1px solid var(--color-borde); background: var(--color-superficie); box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 90%; max-width: 800px; height: 85vh; margin: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0; color: var(--color-texto);">Factura Electrónica</h3>
+            <button class="boton" onclick="document.getElementById('modalVerFactura').close()" style="background: #e74c3c; color: white; padding: 0.4rem 0.8rem; border-radius: 6px; border: none; cursor: pointer;">Cerrar</button>
+        </div>
+        <!-- Iframe para montar el PDF estático -->
+        <iframe id="iframeFactura" src="" style="width: 100%; height: calc(100% - 4rem); border: 1px solid var(--color-borde); border-radius: 8px; background: #fff;"></iframe>
+    </dialog>
+
+    <script>
+        function verFactura(url) {
+            document.getElementById('iframeFactura').src = url;
+            document.getElementById('modalVerFactura').showModal();
+        }
+    </script>
 @endsection

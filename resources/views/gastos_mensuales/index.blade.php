@@ -73,16 +73,17 @@
                             </ul>
                         </td>
                         <td style="padding: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="boton" onclick="verDetalles({{ $gasto->id }}, '{{ \Carbon\Carbon::parse($gasto->mes_anio)->translatedFormat('F Y') }}', {{ $gasto->detalles->toJson() }})" style="background: none; color: var(--color-acentuar);">Ver</button>
                             @if(!$gasto->procesado)
                                 <a href="{{ route('gastos-mensuales.edit', $gasto->id) }}" class="boton" style="background: none; color: var(--color-acentuar);">Editar</a>
                                 <form action="{{ route('gastos-mensuales.destroy', $gasto->id) }}" method="POST"
-                                    onsubmit="return confirm('¿Eliminar el registro de gastos para el mes seleccionado? Esta acción no se puede deshacer.')">
+                                    onsubmit="return confirm('¿Eliminar el registro de gastos para el mes seleccionado? Esta acción no se puede deshacer.')" style="margin:0;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="boton" style="background: none; color: #dc3545;">Eliminar</button>
                                 </form>
                             @else
-                                <button class="boton" style="background: none; color: var(--color-texto-secundario); cursor: not-allowed;" title="Ya no se puede modificar">Solo Lectura</button>
+                                <span class="boton" style="background: none; color: var(--color-texto-secundario); cursor: not-allowed; opacity: 0.6;" title="Ya no se puede modificar">Bloqueado</span>
                             @endif
                         </td>
                     </tr>
@@ -91,4 +92,58 @@
             </table>
         @endif
     </div>
+
+    <!-- Modal para ver detalles de gastos -->
+    <dialog id="modalDetallesGasto" style="padding: 1.5rem; border-radius: 12px; border: 1px solid var(--color-borde); background: var(--color-superficie); box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 90%; max-width: 600px; margin: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-borde); padding-bottom: 1rem;">
+            <h3 style="margin: 0; color: var(--color-texto);">Desglose de Gastos - <span id="modalMesTitulo"></span></h3>
+            <button class="boton" onclick="document.getElementById('modalDetallesGasto').close()" style="background: #e74c3c; color: white; padding: 0.4rem 0.8rem; border-radius: 6px; border: none; cursor: pointer;">Cerrar</button>
+        </div>
+        
+        <div style="max-height: 60vh; overflow-y: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="text-align: left; border-bottom: 2px solid var(--color-borde); background: var(--color-acentuar-suave);">
+                        <th style="padding: 0.8rem;">Concepto</th>
+                        <th style="padding: 0.8rem; text-align: right;">Monto ($)</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaDetallesCuerpo">
+                    <!-- Se puebla con JS -->
+                </tbody>
+                <tfoot>
+                    <tr style="border-top: 2px solid var(--color-borde); font-weight: bold;">
+                        <td style="padding: 1rem;">TOTAL GENERAL</td>
+                        <td style="padding: 1rem; text-align: right; color: var(--color-acentuar);" id="modalTotalGasto">$ 0.00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </dialog>
+
+    <script>
+        function verDetalles(id, mesAnio, detalles) {
+            document.getElementById('modalMesTitulo').textContent = mesAnio;
+            const cuerpo = document.getElementById('tablaDetallesCuerpo');
+            cuerpo.innerHTML = '';
+            
+            let total = 0;
+            detalles.forEach(d => {
+                const monto = parseFloat(d.monto);
+                total += monto;
+                const fila = document.createElement('tr');
+                fila.style.borderBottom = '1px solid var(--color-borde)';
+                fila.innerHTML = `
+                    <td style="padding: 0.8rem;">${d.descripcion}</td>
+                    <td style="padding: 0.8rem; text-align: right; font-weight: 500; color: ${monto < 0 ? '#c62828' : 'inherit'}">
+                        $ ${monto.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    </td>
+                `;
+                cuerpo.appendChild(fila);
+            });
+            
+            document.getElementById('modalTotalGasto').textContent = `$ ${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('modalDetallesGasto').showModal();
+        }
+    </script>
 @endsection

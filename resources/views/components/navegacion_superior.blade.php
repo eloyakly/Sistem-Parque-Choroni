@@ -12,5 +12,11 @@
             </div>
             <span>Administrador</span>
         </div>
+        <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
+            @csrf
+            <button type="submit" class="boton" style="padding: 0.4rem 0.8rem; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Salir
+            </button>
+        </form>
     </div>
 </header>

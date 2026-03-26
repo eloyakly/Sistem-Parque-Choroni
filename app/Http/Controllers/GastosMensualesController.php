@@ -47,7 +47,7 @@ class GastosMensualesController extends Controller
             'descripcion'   => 'required|array|min:1',
             'descripcion.*' => 'required|string|max:255',
             'monto'         => 'required|array|min:1',
-            'monto.*'       => 'required|numeric|min:0.01',
+            'monto.*'       => 'required|numeric',
         ], [
             'mes_anio.required'      => 'Debe seleccionar el mes correspondiente.',
             'mes_anio.date_format'   => 'El formato del mes no es válido.',
@@ -57,7 +57,6 @@ class GastosMensualesController extends Controller
             'monto.required'         => 'Hay conceptos sin monto cargado.',
             'monto.*.required'       => 'El monto es obligatorio para cada concepto.',
             'monto.*.numeric'        => 'El monto debe ser un valor numérico.',
-            'monto.*.min'            => 'El monto debe ser numérico positivo mayor a 0.',
         ]);
 
         // Asegurar que no se repita un registro de gastos para el mismo mes
@@ -137,7 +136,7 @@ class GastosMensualesController extends Controller
             'descripcion'   => 'required|array|min:1',
             'descripcion.*' => 'required|string|max:255',
             'monto'         => 'required|array|min:1',
-            'monto.*'       => 'required|numeric|min:0.01',
+            'monto.*'       => 'required|numeric',
         ], [
             'mes_anio.required'      => 'Debe seleccionar el mes correspondiente.',
             'mes_anio.date_format'   => 'El formato del mes no es válido.',

@@ -57,7 +57,7 @@
                                     style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
                             </td>
                             <td style="padding: 0.8rem;">
-                                <input type="number" name="monto[]" step="0.01" min="0.01" value="{{ old('monto')[$index] }}" class="entrada-monto"
+                                <input type="number" name="monto[]" step="0.01" value="{{ old('monto')[$index] }}" class="entrada-monto"
                                     style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
                             </td>
                             <td style="padding: 0.8rem; text-align: center;">
@@ -74,7 +74,7 @@
                                     style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
                             </td>
                             <td style="padding: 0.8rem;">
-                                <input type="number" name="monto[]" step="0.01" min="0.01" value="{{ $detalle->monto }}" class="entrada-monto"
+                                <input type="number" name="monto[]" step="0.01" value="{{ $detalle->monto }}" class="entrada-monto"
                                     style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: inherit;" required>
                             </td>
                             <td style="padding: 0.8rem; text-align: center;">
@@ -152,7 +152,7 @@
                 <input type="text" name="descripcion[]" placeholder="Ej: Nuevo concepto" style="${estiloInput}" required>
             </td>
             <td style="padding:0.8rem;">
-                <input type="number" name="monto[]" step="0.01" min="0.01" placeholder="0.00" class="entrada-monto" style="${estiloInput}" required>
+                <input type="number" name="monto[]" step="0.01" placeholder="0.00" class="entrada-monto" style="${estiloInput}" required>
             </td>
             <td style="padding:0.8rem;text-align:center;">
                 <button type="button" class="btn-eliminar-fila"

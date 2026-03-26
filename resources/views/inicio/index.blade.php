@@ -11,19 +11,21 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
         <div class="tarjeta" style="border-left: 4px solid var(--color-acentuar);">
             <h3>🏢 Apartamentos</h3>
-            <p>124 Unidades</p>
+            <p>{{ $totalApartamentos }} Unidades</p>
         </div>
         <div class="tarjeta" style="border-left: 4px solid #cc8e35;">
             <h3>👤 Propietarios</h3>
-            <p>98 Personas</p>
+            <p>{{ $totalPropietarios }} Personas</p>
         </div>
         <div class="tarjeta" style="border-left: 4px solid #27ae60;">
             <h3>📄 Facturas Pendientes</h3>
-            <p>12 Facturas</p>
+            <p>{{ $facturasPendientes }} Facturas</p>
         </div>
         <div class="tarjeta" style="border-left: 4px solid #8e44ad;">
             <h3>💳 Pagos del Mes</h3>
-            <p>45 Registros</p>
+            <p>{{ $pagosMes }} Registros</p>
         </div>
     </div>
+
+
 @endsection

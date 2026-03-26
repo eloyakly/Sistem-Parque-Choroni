@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso - Sistem Parque Choroni</title>
+    <link rel="icon" type="image/png" href="{{ asset('logo.png') }}">
 
     <!-- Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,13 +44,16 @@
 
     <div class="login-contenedor">
         <div class="login-caja tarjeta">
-            <div class="login-logo">Parque Choroni</div>
+            <div class="login-logo">
+                <img src="{{ asset('logo.png') }}" alt="Parque Choroni" style="max-height: 80px; width: auto; margin-bottom: 0.5rem;">
+                <div style="font-size: 1.8rem; font-weight: bold; color: var(--color-acentuar);">Parque Choroni</div>
+            </div>
 
             <h2 style="text-align: center; margin-bottom: 0.5rem;">Bienvenido</h2>
             <p style="text-align: center; color: var(--color-texto-secundario); margin-bottom: 2rem;">Ingrese sus
                 credenciales para continuar</p>
 
-            <form action="{{ url('/inicio') }}" method="POST">
+            <form action="{{ route('login.post') }}" method="POST">
                 @csrf
                 <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -88,8 +92,19 @@
                 </button>
             </div>
         </div>
-    </div>
 
+
+    </div>
+    <footer
+        style="padding-top: 1.5rem; text-align: center; border-top: 1px solid var(--color-borde); color: var(--color-texto-secundario); font-size: 0.95rem;">
+        <p>Desarrollado por <strong>Easistem</strong>. Derechos reservados &copy; 2026.</p>
+        <p style="margin-top: 0.8rem;">
+            <a href="mailto:eloyalimalaveakly@gmail.com" class="boton"
+                style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--color-superficie); border: 1px solid var(--color-borde); text-decoration: none; color: var(--color-texto);">
+                ✉️ Contacto: eloyalimalaveakly@gmail.com
+            </a>
+        </p>
+    </footer>
     <script>
         const botonTema = document.getElementById('boton-tema');
         const cuerpo = document.body;
@@ -123,11 +138,21 @@
             iconoOjo.innerHTML = esPassword ? ojoCerrado : ojoAbierto;
         });
     </script>
-    @if (isset($error))
+    @if (session('error'))
+        <script>
+            alert('{{ session('error') }}');
+        </script>
+    @elseif (isset($error))
         <script>
             alert('{{ $error }}');
         </script>
     @endif
+    @if (session('success'))
+        <script>
+            alert('{{ session('success') }}');
+        </script>
+    @endif
+
 </body>
 
 </html>

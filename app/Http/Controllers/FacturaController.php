@@ -102,6 +102,16 @@ class FacturaController extends Controller
                 'fecha_vencimiento' => $request->fecha_vencimiento,
             ]);
 
+            // Generar y Guardar PDF
+            $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre);
+            $mesFormateadoPdf = \Carbon\Carbon::parse($gastoMes->mes_anio)->locale('es')->translatedFormat('F Y');
+            $mesAnioPdf = str_replace(' ', '', ucwords($mesFormateadoPdf));
+            $pdfFolder = "facturas/{$tipoInmueble}/{$mesAnioPdf}";
+            $pdfFileName = "factura_{$factura->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.factura', ['factura' => $factura, 'gastoMes' => $gastoMes]);
+            \Illuminate\Support\Facades\Storage::disk('public')->put("{$pdfFolder}/{$pdfFileName}", $pdf->output());
+
             // Actualizar deuda del apartamento sumando la nueva factura
             $apartamento->increment('deuda_actual', $montoTotal);
 
@@ -183,6 +193,16 @@ class FacturaController extends Controller
                     'fecha_vencimiento' => $request->fecha_vencimiento,
                 ]);
 
+                // Generar y Guardar PDF
+                $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre);
+                $mesFormateadoPdf = \Carbon\Carbon::parse($gastoMes->mes_anio)->locale('es')->translatedFormat('F Y');
+                $mesAnioPdf = str_replace(' ', '', ucwords($mesFormateadoPdf));
+                $pdfFolder = "facturas/{$tipoInmueble}/{$mesAnioPdf}";
+                $pdfFileName = "factura_{$nuevaFactura->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
+
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.factura', ['factura' => $nuevaFactura, 'gastoMes' => $gastoMes]);
+                \Illuminate\Support\Facades\Storage::disk('public')->put("{$pdfFolder}/{$pdfFileName}", $pdf->output());
+
                 $apartamento->increment('deuda_actual', $montoTotal);
                 $generadas++;
 
@@ -216,7 +236,28 @@ class FacturaController extends Controller
      */
     public function show(Factura $factura)
     {
-        return redirect()->route('facturas.index');
+        $apartamento = clone $factura->apartamento;
+        $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre);
+        $mesFormateado = str_replace('Mensualidad de Condominio - ', '', $factura->descripcion);
+        $mesAnioPdf = str_replace(' ', '', ucwords($mesFormateado)); 
+        
+        $pdfPath = "facturas/{$tipoInmueble}/{$mesAnioPdf}/factura_{$factura->id}_apto_{$apartamento->numero}.pdf";
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
+            return response()->file(storage_path('app/public/' . $pdfPath));
+        }
+
+        // Respaldo: Intentar recrear dinámicamente si no se generó el estático en disco
+        try {
+            $mesAnioClean = \Carbon\Carbon::parse($mesFormateado)->format('Y-m');
+            $gastoMes = \App\Models\GastoMes::where('mes_anio', 'like', $mesAnioClean . '%')->first();
+            if ($gastoMes) {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.factura', ['factura' => $factura, 'gastoMes' => $gastoMes]);
+                return $pdf->stream("factura_{$factura->id}.pdf");
+            }
+        } catch (\Exception $e) {}
+
+        return redirect()->route('facturas.index')->with('error', 'El documento PDF no se encuentra disponible ni pudo ser generado dinámicamente.');
     }
 
     /**
@@ -236,10 +277,12 @@ class FacturaController extends Controller
             DB::beginTransaction();
 
             if ($factura->estado === 'pagado') {
+                DB::rollBack();
                 return redirect()->route('facturas.index')->with('error', 'No se puede eliminar una factura que ya ha sido pagada en su totalidad.');
             }
 
             if ($factura->monto_total > $factura->saldo_pendiente) {
+                DB::rollBack();
                 return redirect()->route('facturas.index')->with('error', 'La factura tiene pagos parciales o asociados registrados. Consulte la base.');
             }
 

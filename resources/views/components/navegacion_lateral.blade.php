@@ -1,6 +1,7 @@
 <aside class="barra-lateral">
-    <div class="barra-lateral-encabezado">
-        Parque Choroni
+    <div class="barra-lateral-encabezado" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1.5rem 1rem;">
+        <img src="{{ asset('logo.png') }}" alt="Logo" style="width: 60px; height: 60px; object-fit: contain; background: white; border-radius: 12px; padding: 5px;">
+        <span style="font-size: 1.2rem; font-weight: 700;">Parque Choroní</span>
     </div>
     <nav>
         <a href="{{ url('/inicio') }}" class="item-menu {{ Request::is('inicio*') ? 'activo' : '' }}">

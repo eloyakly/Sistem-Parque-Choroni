@@ -16,6 +16,28 @@
 <body>
     <div class="container">
         <div class="header">
+            @php
+                $logoPath = public_path('logo.png');
+                $logoSrc = '';
+                if (file_exists($logoPath)) {
+                    try {
+                        // Si se está renderizando como correo, usar CID embed (compatible con Gmail/Outlook)
+                        // Si se está renderizando como PDF, usar base64
+                        if (isset($message)) {
+                            $logoSrc = $message->embed($logoPath);
+                        } else {
+                            $logoType = pathinfo($logoPath, PATHINFO_EXTENSION);
+                            $logoImage = file_get_contents($logoPath);
+                            $logoSrc = 'data:image/' . $logoType . ';base64,' . base64_encode($logoImage);
+                        }
+                    } catch (\Exception $e) {
+                        $logoSrc = '';
+                    }
+                }
+            @endphp
+            @if($logoSrc)
+                <img src="{{ $logoSrc }}" alt="Logo" style="max-height: 70px; margin-bottom: 10px;">
+            @endif
             <h2 style="margin: 0; color: #0056b3;">Condominio Parque Choroní</h2>
         </div>
         <div class="content">
