@@ -36,7 +36,7 @@ class PagoController extends Controller
      */
     public function create()
     {
-        // Traer facturas que no estén pagadas totalmente
+        // Traer recibos (facturas) que no estén pagadas totalmente
         $facturas = Factura::with('apartamento.propietario')
             ->whereIn('estado', ['no_pagado', 'pago_parcial'])
             ->orderBy('fecha_vencimiento')
@@ -100,7 +100,7 @@ class PagoController extends Controller
 
             DB::commit();
 
-            return redirect()->route('pagos.index')->with('exito', 'Pago registrado correctamente. La deuda del apartamento y la factura han sido actualizados.');
+            return redirect()->route('pagos.index')->with('exito', 'Pago registrado correctamente. La deuda del apartamento y el recibo han sido actualizados.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withInput()->with('error', 'Ocurrió un error al registrar el pago: ' . $e->getMessage());
@@ -114,17 +114,56 @@ class PagoController extends Controller
     {
         $query = Apartamento::with('propietario')->where('deuda_actual', '>', 0);
         
+        // Búsqueda por texto
         if ($request->filled('buscar')) {
             $buscar = $request->buscar;
-            $query->whereHas('propietario', function($q) use ($buscar) {
-                $q->where('nombre', 'LIKE', "%$buscar%")
-                  ->orWhere('apellido', 'LIKE', "%$buscar%")
-                  ->orWhere('cedula', 'LIKE', "%$buscar%");
-            })->orWhere('numero', 'LIKE', "%$buscar%");
+            $query->where(function($q) use ($buscar) {
+                $q->whereHas('propietario', function($sq) use ($buscar) {
+                    $sq->where('nombre', 'LIKE', "%$buscar%")
+                      ->orWhere('apellido', 'LIKE', "%$buscar%")
+                      ->orWhere('cedula', 'LIKE', "%$buscar%");
+                })->orWhere('numero', 'LIKE', "%$buscar%");
+            });
         }
 
-        $deudores = $query->orderBy('deuda_actual', 'desc')->get();
-        return view('pagos.deudores', compact('deudores'));
+        // Filtro por Monto Mínimo
+        if ($request->filled('monto_min')) {
+            $query->where('deuda_actual', '>=', $request->monto_min);
+        }
+
+        // Filtro por Monto Máximo
+        if ($request->filled('monto_max')) {
+            $query->where('deuda_actual', '<=', $request->monto_max);
+        }
+
+        // Filtro por Torre
+        if ($request->filled('torre')) {
+            $query->where('torre', $request->torre);
+        }
+
+        // Orden de resultados
+        $orden = $request->get('orden', 'deuda_desc');
+        switch ($orden) {
+            case 'deuda_asc':
+                $query->orderBy('deuda_actual', 'asc');
+                break;
+            case 'numero_asc':
+                $query->orderBy('numero', 'asc');
+                break;
+            case 'numero_desc':
+                $query->orderBy('numero', 'desc');
+                break;
+            case 'deuda_desc':
+            default:
+                $query->orderBy('deuda_actual', 'desc');
+                break;
+        }
+
+        $deudores = $query->get();
+        // Obtener torres únicas para el filtro
+        $torres = Apartamento::distinct()->pluck('torre');
+
+        return view('pagos.deudores', compact('deudores', 'torres'));
     }
 
     /**
@@ -186,7 +225,7 @@ class PagoController extends Controller
             }
 
             DB::commit();
-            return redirect()->back()->with('exito', 'Abono registrado con éxito. El pago fue debitado de la deuda total y aplicado a sus facturas pendientes en orden de antigüedad.');
+            return redirect()->back()->with('exito', 'Abono registrado con éxito. El pago fue debitado de la deuda total y aplicado a sus recibos pendientes en orden de antigüedad.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Ocurrió un error al procesar el abono: ' . $e->getMessage());

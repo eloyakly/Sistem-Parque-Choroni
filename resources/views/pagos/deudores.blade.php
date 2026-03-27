@@ -21,14 +21,60 @@
         </div>
     @endif
 
-    <div class="tarjeta" style="margin-bottom: 1rem;">
-        <form action="{{ route('pagos.deudores') }}" method="GET" style="display: flex; gap: 1rem; align-items: center;">
-            <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Buscar por propietario, cédula o apartamento..."
-                style="padding: 0.6rem; border-radius: 6px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto); flex: 1;">
-            <button class="boton boton-primario" type="submit">Buscar Deudor</button>
-            @if(request('buscar'))
-                <a href="{{ route('pagos.deudores') }}" class="boton" style="background: var(--color-borde);">Limpiar</a>
-            @endif
+    <div class="tarjeta" style="margin-bottom: 2rem;">
+        <form action="{{ route('pagos.deudores') }}" method="GET">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; align-items: end;">
+                <!-- Búsqueda General -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; flex: 2; grid-column: span 2;">
+                    <label style="font-weight: 600; font-size: 0.9rem; color: var(--color-texto-secundario);">Búsqueda General</label>
+                    <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Nombre, cédula o apartamento..."
+                        style="padding: 0.7rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto); width: 100%;">
+                </div>
+
+                <!-- Monto Mínimo -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; font-size: 0.9rem; color: var(--color-texto-secundario);">Monto Mín. ($)</label>
+                    <input type="number" name="monto_min" value="{{ request('monto_min') }}" step="0.01" placeholder="Ej: 200"
+                        style="padding: 0.7rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto);">
+                </div>
+
+                <!-- Monto Máximo -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; font-size: 0.9rem; color: var(--color-texto-secundario);">Monto Máx. ($)</label>
+                    <input type="number" name="monto_max" value="{{ request('monto_max') }}" step="0.01" placeholder="Ej: 500"
+                        style="padding: 0.7rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto);">
+                </div>
+
+                <!-- Torre -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; font-size: 0.9rem; color: var(--color-texto-secundario);">Torre</label>
+                    <select name="torre" style="padding: 0.7rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto);">
+                        <option value="">Todas</option>
+                        @foreach($torres as $torre)
+                            <option value="{{ $torre }}" {{ request('torre') == $torre ? 'selected' : '' }}>Torre {{ $torre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Orden -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="font-weight: 600; font-size: 0.9rem; color: var(--color-texto-secundario);">Ordenar por</label>
+                    <select name="orden" style="padding: 0.7rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto);">
+                        <option value="deuda_desc" {{ request('orden') == 'deuda_desc' ? 'selected' : '' }}>Mayor Deuda</option>
+                        <option value="deuda_asc" {{ request('orden') == 'deuda_asc' ? 'selected' : '' }}>Menor Deuda</option>
+                        <option value="numero_asc" {{ request('orden') == 'numero_asc' ? 'selected' : '' }}>Apto (A-Z)</option>
+                        <option value="numero_desc" {{ request('orden') == 'numero_desc' ? 'selected' : '' }}>Apto (Z-A)</option>
+                    </select>
+                </div>
+
+                <!-- Acciones -->
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                    <button class="boton boton-primario" type="submit" style="padding: 0.7rem 1.5rem;">Filtrar</button>
+                    @if(request()->anyFilled(['buscar', 'monto_min', 'monto_max', 'torre', 'orden']))
+                        <a href="{{ route('pagos.deudores') }}" class="boton" style="background: var(--color-borde); padding: 0.7rem 1.2rem; display: flex; align-items: center; justify-content: center;">Limpiar</a>
+                    @endif
+                </div>
+            </div>
         </form>
     </div>
 
@@ -131,7 +177,7 @@
         function abrirModalAbono(id, numero, torre, deuda) {
             document.getElementById('abono_apartamento_id').value = id;
             document.getElementById('abono_monto').value = deuda.toFixed(2);
-            document.getElementById('abono_texto').innerHTML = `Se descontará automáticamente de la deuda del <strong>Apto ${numero}</strong> (Torre ${torre}) y se saldarán proporcionalmente sus facturas más antiguas en cola.`;
+            document.getElementById('abono_texto').innerHTML = `Se descontará automáticamente de la deuda del <strong>Apto ${numero}</strong> (Torre ${torre}) y se saldarán proporcionalmente sus recibos más antiguas en cola.`;
             document.getElementById('modalAbono').showModal();
         }
     </script>

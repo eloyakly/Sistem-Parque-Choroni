@@ -26,15 +26,16 @@ class FacturaEmitidaMail extends Mailable
 
     public function envelope(): Envelope
     {
+        $mes = \Carbon\Carbon::parse($this->factura->fecha_vencimiento)->translatedFormat('F Y');
         return new Envelope(
-            subject: 'Parque Choroní | Nueva Factura de Condominio: ' . $this->factura->descripcion,
+            subject: 'Condominio Conjunto Residencial Parque Choroní II — Recibo ' . ucfirst($mes),
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.factura',
+            view: 'emails.recibo',
         );
     }
 }

@@ -1,14 +1,14 @@
 @extends('layouts.plantilla')
 
-@section('titulo', 'Facturación')
+@section('titulo', 'Recibos')
 
 @section('contenido')
     <div class="tarjeta" style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-            <h1>Facturas Emitidas</h1>
+            <h1>Recibos Emitidos</h1>
             <p style="color: var(--color-texto-secundario);">Control de recibos de condominio y gastos comunes (orden descendente).</p>
         </div>
-        <a href="{{ route('facturas.create') }}" class="boton boton-primario">+ Generar Factura</a>
+        <a href="{{ route('recibos.create') }}" class="boton boton-primario">+ Generar Recibo</a>
     </div>
 
     @if(session('exito'))
@@ -24,20 +24,20 @@
     @endif
 
     <div class="tarjeta" style="margin-bottom: 1rem;">
-        <form action="{{ route('facturas.index') }}" method="GET" style="display: flex; gap: 1rem; align-items: center;">
+        <form action="{{ route('recibos.index') }}" method="GET" style="display: flex; gap: 1rem; align-items: center;">
             <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Buscar por concepto o apartamento..."
                 style="padding: 0.6rem; border-radius: 6px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto); flex: 1;">
             <button class="boton boton-primario" type="submit">Buscar</button>
             @if(request('buscar'))
-                <a href="{{ route('facturas.index') }}" class="boton" style="background: var(--color-borde);">Limpiar</a>
+                <a href="{{ route('recibos.index') }}" class="boton" style="background: var(--color-borde);">Limpiar</a>
             @endif
         </form>
     </div>
 
     <div class="tarjeta">
-        @if($facturas->isEmpty())
+        @if($recibos->isEmpty())
             <p style="text-align: center; color: var(--color-texto-secundario); padding: 2rem;">
-                No hay facturas emitidas. <a href="{{ route('facturas.create') }}" style="color: var(--color-acentuar);">Ir a generar factura</a>.
+                No hay recibos emitidos. <a href="{{ route('recibos.create') }}" style="color: var(--color-acentuar);">Ir a generar recibo</a>.
             </p>
         @else
             <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
@@ -54,36 +54,36 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($facturas as $factura)
+                    @foreach($recibos as $recibo)
                     <tr style="border-bottom: 1px solid var(--color-borde);">
-                        <td style="padding: 1rem; font-weight: bold;">#{{ str_pad($factura->id, 5, '0', STR_PAD_LEFT) }}</td>
-                        <td style="padding: 1rem;">{{ $factura->descripcion }}</td>
+                        <td style="padding: 1rem; font-weight: bold;">#{{ str_pad($recibo->id, 5, '0', STR_PAD_LEFT) }}</td>
+                        <td style="padding: 1rem;">{{ $recibo->descripcion }}</td>
                         <td style="padding: 1rem;">
-                            {{ $factura->apartamento->numero }} ({{ $factura->apartamento->torre }})
+                            {{ $recibo->apartamento->numero }} ({{ $recibo->apartamento->torre }})
                         </td>
-                        <td style="padding: 1rem;">$ {{ number_format($factura->monto_total, 2) }}</td>
-                        <td style="padding: 1rem; font-weight: 500; color: {{ $factura->saldo_pendiente > 0 ? '#c62828' : '#2e7d32' }};">
-                            $ {{ number_format($factura->saldo_pendiente, 2) }}
+                        <td style="padding: 1rem;">$ {{ number_format($recibo->monto_total, 2) }}</td>
+                        <td style="padding: 1rem; font-weight: 500; color: {{ $recibo->saldo_pendiente > 0 ? '#c62828' : '#2e7d32' }};">
+                            $ {{ number_format($recibo->saldo_pendiente, 2) }}
                         </td>
                         <td style="padding: 1rem;">
-                            @if(\Carbon\Carbon::parse($factura->fecha_vencimiento)->isPast() && $factura->estado !== 'pagado')
-                                <span style="color: #c62828;">{{ \Carbon\Carbon::parse($factura->fecha_vencimiento)->format('d/m/Y') }} (Vencida)</span>
+                            @if(\Carbon\Carbon::parse($recibo->fecha_vencimiento)->isPast() && $recibo->estado !== 'pagado')
+                                <span style="color: #c62828;">{{ \Carbon\Carbon::parse($recibo->fecha_vencimiento)->format('d/m/Y') }} (Vencida)</span>
                             @else
-                                {{ \Carbon\Carbon::parse($factura->fecha_vencimiento)->format('d/m/Y') }}
+                                {{ \Carbon\Carbon::parse($recibo->fecha_vencimiento)->format('d/m/Y') }}
                             @endif
                         </td>
                         <td style="padding: 1rem;">
-                            @if($factura->estado === 'pagado')
-                                <span style="padding: 0.2rem 0.6rem; background: #c8e6c9; color: #2e7d32; border-radius: 4px; font-size: 0.85rem;">Pagada</span>
-                            @elseif($factura->estado === 'pago_parcial')
+                            @if($recibo->estado === 'pagado')
+                                <span style="padding: 0.2rem 0.6rem; background: #c8e6c9; color: #2e7d32; border-radius: 4px; font-size: 0.85rem;">Pagado</span>
+                            @elseif($recibo->estado === 'pago_parcial')
                                 <span style="padding: 0.2rem 0.6rem; background: #fff9c4; color: #f57f17; border-radius: 4px; font-size: 0.85rem;">Parcial</span>
                             @else
                                 <span style="padding: 0.2rem 0.6rem; background: #ffcdd2; color: #c62828; border-radius: 4px; font-size: 0.85rem;">No Pagado</span>
                             @endif
                         </td>
                         <td style="padding: 1rem; display: flex; gap: 0.5rem; align-items: center;">
-                            <button type="button" class="boton boton-primario" onclick="verFactura('{{ route('facturas.show', $factura->id) }}')" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;">Ver</button>
-                            <form action="{{ route('facturas.destroy', $factura) }}" method="POST" onsubmit="return confirm('¿Está seguro de anular esta factura? Se restaurará el saldo a favor del apartamento.')" style="margin: 0;">
+                            <button type="button" class="boton boton-primario" onclick="verRecibo('{{ route('recibos.show', $recibo->id) }}')" style="padding: 0.3rem 0.6rem; font-size: 0.85rem;">Ver</button>
+                            <form action="{{ route('recibos.destroy', $recibo) }}" method="POST" onsubmit="return confirm('¿Está seguro de anular este recibo? Se restaurará el saldo a favor del apartamento.')" style="margin: 0;">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="boton" style="background: none; color: #dc3545; padding: 0.3rem; font-size: 0.85rem;">Anular</button>
@@ -96,20 +96,20 @@
         @endif
     </div>
 
-    <!-- Modal para ver factura -->
-    <dialog id="modalVerFactura" style="padding: 1.5rem; border-radius: 12px; border: 1px solid var(--color-borde); background: var(--color-superficie); box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 90%; max-width: 800px; height: 85vh; margin: auto;">
+    <!-- Modal para ver recibo -->
+    <dialog id="modalVerRecibo" style="padding: 1.5rem; border-radius: 12px; border: 1px solid var(--color-borde); background: var(--color-superficie); box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 90%; max-width: 800px; height: 85vh; margin: auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3 style="margin: 0; color: var(--color-texto);">Factura Electrónica</h3>
-            <button class="boton" onclick="document.getElementById('modalVerFactura').close()" style="background: #e74c3c; color: white; padding: 0.4rem 0.8rem; border-radius: 6px; border: none; cursor: pointer;">Cerrar</button>
+            <h3 style="margin: 0; color: var(--color-texto);">Recibo Electrónico</h3>
+            <button class="boton" onclick="document.getElementById('modalVerRecibo').close()" style="background: #e74c3c; color: white; padding: 0.4rem 0.8rem; border-radius: 6px; border: none; cursor: pointer;">Cerrar</button>
         </div>
         <!-- Iframe para montar el PDF estático -->
-        <iframe id="iframeFactura" src="" style="width: 100%; height: calc(100% - 4rem); border: 1px solid var(--color-borde); border-radius: 8px; background: #fff;"></iframe>
+        <iframe id="iframeRecibo" src="" style="width: 100%; height: calc(100% - 4rem); border: 1px solid var(--color-borde); border-radius: 8px; background: #fff;"></iframe>
     </dialog>
 
     <script>
-        function verFactura(url) {
-            document.getElementById('iframeFactura').src = url;
-            document.getElementById('modalVerFactura').showModal();
+        function verRecibo(url) {
+            document.getElementById('iframeRecibo').src = url;
+            document.getElementById('modalVerRecibo').showModal();
         }
     </script>
 @endsection

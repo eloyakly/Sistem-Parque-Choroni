@@ -31,12 +31,12 @@ class FacturaController extends Controller
                   });
         }
 
-        $facturas = $query->get();
-        return view('facturas.index', compact('facturas'));
+        $recibos = $query->get();
+        return view('recibos.index', compact('recibos'));
     }
 
     /**
-     * Muestra formulario para crear una factura.
+     * Muestra formulario para crear un recibo.
      */
     public function create()
     {
@@ -46,7 +46,7 @@ class FacturaController extends Controller
         
         $tipos = TipoApartamento::orderBy('nombre')->get();
 
-        return view('facturas.crear', compact('apartamentos', 'gastos', 'tipos'));
+        return view('recibos.crear', compact('apartamentos', 'gastos', 'tipos'));
     }
 
     /**
@@ -92,7 +92,7 @@ class FacturaController extends Controller
                 return redirect()->back()->withInput()->with('error', 'Este apartamento ya tiene una factura emitida para este mes (' . $descripcion . ').');
             }
 
-            // Crear Factura
+            // Crear Recibo (Factura)
             $factura = Factura::create([
                 'apartamento_id'    => $apartamento->id,
                 'descripcion'       => $descripcion,
@@ -106,13 +106,13 @@ class FacturaController extends Controller
             $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre);
             $mesFormateadoPdf = \Carbon\Carbon::parse($gastoMes->mes_anio)->locale('es')->translatedFormat('F Y');
             $mesAnioPdf = str_replace(' ', '', ucwords($mesFormateadoPdf));
-            $pdfFolder = "facturas/{$tipoInmueble}/{$mesAnioPdf}";
-            $pdfFileName = "factura_{$factura->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
+            $pdfFolder = "recibos/{$tipoInmueble}/{$mesAnioPdf}";
+            $pdfFileName = "recibo_{$factura->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
 
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.factura', ['factura' => $factura, 'gastoMes' => $gastoMes]);
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.recibo', ['recibo' => $factura, 'gastoMes' => $gastoMes]);
             \Illuminate\Support\Facades\Storage::disk('public')->put("{$pdfFolder}/{$pdfFileName}", $pdf->output());
 
-            // Actualizar deuda del apartamento sumando la nueva factura
+            // Actualizar deuda del apartamento sumando el nuevo recibo
             $apartamento->increment('deuda_actual', $montoTotal);
 
             // Enviar Correo con Desglose
@@ -127,17 +127,17 @@ class FacturaController extends Controller
 
             DB::commit();
 
-            return redirect()->route('facturas.index')
-                ->with('exito', 'Factura generada exitosamente. Monto: $ ' . number_format($montoTotal, 2));
+            return redirect()->route('recibos.index')
+                ->with('exito', 'Recibo generado exitosamente. Monto: $ ' . number_format($montoTotal, 2));
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withInput()->with('error', 'Ocurrió un error al generar la factura: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Ocurrió un error al generar el recibo: ' . $e->getMessage());
         }
     }
 
     /**
-     * Generar facturas masivamente por Tipo de Apartamento.
+     * Generar recibos masivamente por Tipo de Apartamento.
      */
     public function storeMasivo(Request $request)
     {
@@ -197,10 +197,10 @@ class FacturaController extends Controller
                 $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre);
                 $mesFormateadoPdf = \Carbon\Carbon::parse($gastoMes->mes_anio)->locale('es')->translatedFormat('F Y');
                 $mesAnioPdf = str_replace(' ', '', ucwords($mesFormateadoPdf));
-                $pdfFolder = "facturas/{$tipoInmueble}/{$mesAnioPdf}";
-                $pdfFileName = "factura_{$nuevaFactura->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
+                $pdfFolder = "recibos/{$tipoInmueble}/{$mesAnioPdf}";
+                $pdfFileName = "recibo_{$nuevaFactura->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
 
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.factura', ['factura' => $nuevaFactura, 'gastoMes' => $gastoMes]);
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.recibo', ['recibo' => $nuevaFactura, 'gastoMes' => $gastoMes]);
                 \Illuminate\Support\Facades\Storage::disk('public')->put("{$pdfFolder}/{$pdfFileName}", $pdf->output());
 
                 $apartamento->increment('deuda_actual', $montoTotal);
@@ -218,12 +218,12 @@ class FacturaController extends Controller
 
             DB::commit();
 
-            $mensaje = "Proceso masivo finalizado. Facturas generadas: $generadas.";
+            $mensaje = "Proceso masivo finalizado. Recibos generados: $generadas.";
             if ($omitidas > 0) {
-                $mensaje .= " Omitidas (ya existían): $omitidas.";
+                $mensaje .= " Omitidos (ya existían): $omitidas.";
             }
 
-            return redirect()->route('facturas.index')->with('exito', $mensaje);
+            return redirect()->route('recibos.index')->with('exito', $mensaje);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -241,7 +241,7 @@ class FacturaController extends Controller
         $mesFormateado = str_replace('Mensualidad de Condominio - ', '', $factura->descripcion);
         $mesAnioPdf = str_replace(' ', '', ucwords($mesFormateado)); 
         
-        $pdfPath = "facturas/{$tipoInmueble}/{$mesAnioPdf}/factura_{$factura->id}_apto_{$apartamento->numero}.pdf";
+        $pdfPath = "recibos/{$tipoInmueble}/{$mesAnioPdf}/recibo_{$factura->id}_apto_{$apartamento->numero}.pdf";
 
         if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
             return response()->file(storage_path('app/public/' . $pdfPath));
@@ -252,24 +252,24 @@ class FacturaController extends Controller
             $mesAnioClean = \Carbon\Carbon::parse($mesFormateado)->format('Y-m');
             $gastoMes = \App\Models\GastoMes::where('mes_anio', 'like', $mesAnioClean . '%')->first();
             if ($gastoMes) {
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.factura', ['factura' => $factura, 'gastoMes' => $gastoMes]);
-                return $pdf->stream("factura_{$factura->id}.pdf");
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.recibo', ['recibo' => $factura, 'gastoMes' => $gastoMes]);
+                return $pdf->stream("recibo_{$factura->id}.pdf");
             }
         } catch (\Exception $e) {}
 
-        return redirect()->route('facturas.index')->with('error', 'El documento PDF no se encuentra disponible ni pudo ser generado dinámicamente.');
+        return redirect()->route('recibos.index')->with('error', 'El documento PDF no se encuentra disponible ni pudo ser generado dinámicamente.');
     }
 
     /**
-     * No habilitaremos edición manual de facturas por ahora, los montos se alteran con pagos.
+     * No habilitaremos edición manual de recibos por ahora, los montos se alteran con pagos.
      */
     public function edit(Factura $factura)
     {
-        return redirect()->route('facturas.index');
+        return redirect()->route('recibos.index');
     }
 
     /**
-     * Eliminar factura si hubo algún error al emitirla (y corregir saldo del apartamento).
+     * Eliminar recibo si hubo algún error al emitirlo (y corregir saldo del apartamento).
      */
     public function destroy(Factura $factura)
     {
@@ -278,12 +278,12 @@ class FacturaController extends Controller
 
             if ($factura->estado === 'pagado') {
                 DB::rollBack();
-                return redirect()->route('facturas.index')->with('error', 'No se puede eliminar una factura que ya ha sido pagada en su totalidad.');
+                return redirect()->route('recibos.index')->with('error', 'No se puede eliminar un recibo que ya ha sido pagada en su totalidad.');
             }
 
             if ($factura->monto_total > $factura->saldo_pendiente) {
                 DB::rollBack();
-                return redirect()->route('facturas.index')->with('error', 'La factura tiene pagos parciales o asociados registrados. Consulte la base.');
+                return redirect()->route('recibos.index')->with('error', 'El recibo tiene pagos parciales o asociados registrados. Consulte la base.');
             }
 
             // Restar de la deuda del apartamento el saldo_pendiente (que coincide con monto_total si no hay pagos)
@@ -294,11 +294,11 @@ class FacturaController extends Controller
 
             DB::commit();
 
-            return redirect()->route('facturas.index')
-                ->with('exito', 'Factura anulada correctamente. Deuda del apartamento ajustada.');
+            return redirect()->route('recibos.index')
+                ->with('exito', 'Recibo anulado correctamente. Deuda del apartamento ajustada.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('facturas.index')->with('error', 'Error al borrar factura: ' . $e->getMessage());
+            return redirect()->route('recibos.index')->with('error', 'Error al borrar recibo: ' . $e->getMessage());
         }
     }
 }

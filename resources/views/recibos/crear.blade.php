@@ -1,6 +1,6 @@
 @extends('layouts.plantilla')
 
-@section('titulo', 'Emitir Factura Mensual')
+@section('titulo', 'Emitir Recibo Mensual')
 
 @section('contenido')
     <!-- Tom Select CDN para selectores de texto dinámicos -->
@@ -35,7 +35,7 @@
         <div style="font-size: 3rem; margin-bottom: 1rem;">📧</div>
         <h3 style="margin-top: 0; color: var(--color-texto);">Confirmar Envío de Correos</h3>
         <p style="color: var(--color-texto-secundario); margin-bottom: 1.5rem; line-height: 1.5;">
-            Al generar la(s) factura(s), el sistema procesará la deuda y enviará automáticamente un desglose detallado por <strong>correo electrónico</strong> a los propietarios correspondientes. ¿Desea proceder?
+            Al generar el/los <strong>recibo(s)</strong>, el sistema procesará la deuda y enviará automáticamente un desglose detallado por <strong>correo electrónico</strong> a los propietarios correspondientes. ¿Desea proceder?
         </p>
         <div style="display: flex; gap: 1rem; justify-content: center;">
             <button type="button" class="boton" onclick="document.getElementById('modalEmail').close();" style="background: var(--color-borde); color: var(--color-texto);">Cancelar</button>
@@ -64,9 +64,9 @@
     <!-- Formulario Masivo -->
     <div class="tarjeta" style="margin-bottom: 2rem;">
         <h1>Generación Masiva por Tipo de Inmueble</h1>
-        <p style="color: var(--color-texto-secundario);">Emite facturas a todos los apartamentos de un tipo específico de una sola vez.</p>
+        <p style="color: var(--color-texto-secundario);">Emite recibos a todos los apartamentos de un tipo específico de una sola vez.</p>
         
-        <form action="{{ route('facturas.masiva') }}" method="POST" style="margin-top: 2rem; background: var(--color-acentuar-suave); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--color-acentuar);">
+        <form action="{{ route('recibos.masiva') }}" method="POST" style="margin-top: 2rem; background: var(--color-acentuar-suave); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--color-acentuar);">
             @csrf
             
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; align-items: end;">
@@ -110,7 +110,7 @@
             <div style="margin-top: 2rem; background: var(--color-acentuar-suave); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--color-acentuar);">
                 <h3 style="color: var(--color-acentuar); margin-bottom: 0.5rem;">Impacto Masivo</h3>
                 <p style="margin: 0 0 1rem 0; color: var(--color-texto-secundario);">
-                    Inmuebles a Recibir Factura: <strong id="conteo-aptos-masivo" style="color: var(--color-texto); font-size: 1.2rem;">0</strong>
+                    Inmuebles a Recibir Recibo: <strong id="conteo-aptos-masivo" style="color: var(--color-texto); font-size: 1.2rem;">0</strong>
                 </p>
                 
                 <h4 style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--color-texto);">Costo Proyectado por Unidad</h4>
@@ -130,23 +130,23 @@
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--color-acentuar); padding-top: 1rem;">
-                    <span style="font-size: 1.1rem; font-weight: bold;">Cada inmueble facturará:</span>
+                    <span style="font-size: 1.1rem; font-weight: bold;">Cada inmueble recibirá un recibo de:</span>
                     <span id="monto-total-masivo" style="font-size: 1.6rem; font-weight: bold; color: var(--color-acentuar);">$ 0.00</span>
                 </div>
             </div>
 
             <div style="margin-top: 1.5rem;">
-                <button type="button" class="boton boton-primario" onclick="abrirModal(this.closest('form'))">Ejecutar Facturación Masiva</button>
+                <button type="button" class="boton boton-primario" onclick="abrirModal(this.closest('form'))">Ejecutar Recibos Masivos</button>
             </div>
         </form>
     </div>
 
     <!-- Formulario Individual (Existente) -->
     <div class="tarjeta">
-        <h1>Generar Factura Individual</h1>
-        <p style="color: var(--color-texto-secundario);">Seleccione el mes y un único apartamento para facturar individualmente.</p>
+        <h1>Generar Recibo Individual</h1>
+        <p style="color: var(--color-texto-secundario);">Seleccione el mes y un único apartamento para emitir un recibo individualmente.</p>
         
-        <form action="{{ route('facturas.store') }}" method="POST" style="margin-top: 2rem;">
+        <form action="{{ route('recibos.store') }}" method="POST" style="margin-top: 2rem;">
             @csrf
             
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
@@ -238,7 +238,7 @@
 
                 <hr style="border: 0.5px solid var(--color-acentuar); opacity: 0.3; margin: 1rem 0;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 1.2rem; font-weight: bold;">Monto a Facturar:</span>
+                    <span style="font-size: 1.2rem; font-weight: bold;">Monto a Recibir en Recibo:</span>
                     <span id="monto-total" style="font-size: 1.8rem; font-weight: bold; color: var(--color-acentuar);">$ 0.00</span>
                 </div>
                 <small style="display: block; text-align: right; color: var(--color-texto-secundario); margin-top: 0.5rem;">
@@ -247,8 +247,8 @@
             </div>
             
             <div style="display: flex; gap: 1rem;">
-                <button type="button" class="boton boton-primario" onclick="abrirModal(this.closest('form'))">Generar Factura Individual</button>
-                <a href="{{ route('facturas.index') }}" class="boton" style="background: var(--color-borde);">Cancelar</a>
+                <button type="button" class="boton boton-primario" onclick="abrirModal(this.closest('form'))">Generar Recibo Individual</button>
+                <a href="{{ route('recibos.index') }}" class="boton" style="background: var(--color-borde);">Cancelar</a>
             </div>
         </form>
     </div>

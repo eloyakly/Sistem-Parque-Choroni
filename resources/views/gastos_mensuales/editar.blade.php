@@ -5,7 +5,7 @@
 @section('contenido')
 <div class="tarjeta">
     <h1>Editar Gastos de Mensualidad</h1>
-    <p style="color: var(--color-texto-secundario);">Ajuste los gastos comunes aplcables. Solo es posible editar si las facturas del mes no se han procesado.</p>
+    <p style="color: var(--color-texto-secundario);">Ajuste los gastos comunes aplcables. Solo es posible editar si los recibos del mes no se han procesado.</p>
 
     @if($errors->any())
         <div style="background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; border-radius: 8px; padding: 1rem; margin-top: 1rem;">

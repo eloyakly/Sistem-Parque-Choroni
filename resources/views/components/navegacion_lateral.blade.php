@@ -19,8 +19,8 @@
         <a href="{{ url('/gastos-mensuales') }}" class="item-menu {{ Request::is('gastos-mensuales*') ? 'activo' : '' }}">
             <span>💰 Gastos del Mes</span>
         </a>
-        <a href="{{ url('/facturas') }}" class="item-menu {{ Request::is('facturas*') ? 'activo' : '' }}">
-            <span>📄 Facturas</span>
+        <a href="{{ url('/recibos') }}" class="item-menu {{ Request::is('recibos*') ? 'activo' : '' }}">
+            <span>📄 Recibos</span>
         </a>
         <a href="{{ url('/pagos') }}" class="item-menu {{ Request::is('pagos') || Request::is('pagos/create*') ? 'activo' : '' }}">
             <span>💳 Pagos</span>

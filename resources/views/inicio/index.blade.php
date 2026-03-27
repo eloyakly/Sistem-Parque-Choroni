@@ -18,8 +18,8 @@
             <p>{{ $totalPropietarios }} Personas</p>
         </div>
         <div class="tarjeta" style="border-left: 4px solid #27ae60;">
-            <h3>📄 Facturas Pendientes</h3>
-            <p>{{ $facturasPendientes }} Facturas</p>
+            <h3>📄 Recibos Pendientes</h3>
+            <p>{{ $facturasPendientes }} Recibos</p>
         </div>
         <div class="tarjeta" style="border-left: 4px solid #8e44ad;">
             <h3>💳 Pagos del Mes</h3>

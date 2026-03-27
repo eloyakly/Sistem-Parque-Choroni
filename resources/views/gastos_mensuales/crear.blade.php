@@ -5,7 +5,7 @@
 @section('contenido')
 <div class="tarjeta">
     <h1>Definir Gastos de Mensualidad</h1>
-    <p style="color: var(--color-texto-secundario);">Estos montos servirán de base para las facturas individuales del mes seleccionado.</p>
+    <p style="color: var(--color-texto-secundario);">Estos montos servirán de base para los recibos individuales del mes seleccionado.</p>
 
     @if($errors->any())
         <div style="background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; border-radius: 8px; padding: 1rem; margin-top: 1rem;">

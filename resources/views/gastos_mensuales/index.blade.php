@@ -6,7 +6,7 @@
     <div class="tarjeta" style="display: flex; justify-content: space-between; align-items: center;">
         <div>
             <h1>Gastos Generales por Mes</h1>
-            <p style="color: var(--color-texto-secundario);">Cargue los gastos comunes que se aplicarán a todas las facturas del mes.</p>
+            <p style="color: var(--color-texto-secundario);">Cargue los gastos comunes que se aplicarán a todos los recibos del mes.</p>
         </div>
         <a href="{{ route('gastos-mensuales.create') }}" class="boton boton-primario">+ Cargar Gastos del Mes</a>
     </div>

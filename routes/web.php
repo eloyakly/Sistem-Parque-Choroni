@@ -31,8 +31,8 @@ Route::middleware([\App\Http\Middleware\CheckSession::class])->group(function ()
     Route::resource('/propietarios', PropietarioController::class);
     Route::resource('/apartamentos', ApartamentoController::class);
 
-    Route::post('/facturas/masiva', [FacturaController::class, 'storeMasivo'])->name('facturas.masiva');
-    Route::resource('/facturas', FacturaController::class);
+    Route::post('/recibos/masiva', [FacturaController::class, 'storeMasivo'])->name('recibos.masiva');
+    Route::resource('/recibos', FacturaController::class)->names('recibos');
 
     Route::get('/deudores', [PagoController::class, 'deudores'])->name('pagos.deudores');
     Route::post('/pagos/abonar-deuda', [PagoController::class, 'abonarDeuda'])->name('pagos.abonar');
