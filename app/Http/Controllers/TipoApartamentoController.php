@@ -36,11 +36,10 @@ class TipoApartamentoController extends Controller
     public function store(Request $request)
     {
         $datos = $request->validate([
-            'nombre'    => 'required|string|in:Estándar,Estudio,Penthouse|unique:tipo_apartamentos,nombre',
+            'nombre'    => 'required|string|unique:tipo_apartamentos,nombre',
             'alicuota'  => 'required|numeric|min:0|max:100', // Permite todos los decimales que vengan en el request
         ], [
-            'nombre.required'   => 'Debe seleccionar un tipo de inmueble válido.',
-            'nombre.in'         => 'El tipo de inmueble debe ser uno de los predefinidos.',
+            'nombre.required'   => 'Debe ingresar un nombre de inmueble válido.',
             'nombre.unique'     => 'Ese tipo de inmueble ya se encuentra registrado.',
             'alicuota.required' => 'La alícuota es obligatoria.',
             'alicuota.numeric'  => 'La alícuota debe ser un número válido.',
@@ -76,11 +75,10 @@ class TipoApartamentoController extends Controller
     public function update(Request $request, TipoApartamento $tiposApartamento)
     {
         $datos = $request->validate([
-            'nombre'   => 'required|string|in:Estándar,Estudio,Penthouse|unique:tipo_apartamentos,nombre,' . $tiposApartamento->id,
+            'nombre'   => 'required|string|unique:tipo_apartamentos,nombre,' . $tiposApartamento->id,
             'alicuota' => 'required|numeric|min:0|max:100',
         ], [
-            'nombre.required'   => 'Debe seleccionar un tipo de inmueble válido.',
-            'nombre.in'         => 'El tipo de inmueble debe ser uno de los predefinidos.',
+            'nombre.required'   => 'Debe ingresar un nombre de inmueble válido.',
             'nombre.unique'     => 'Ese tipo de inmueble ya se encuentra registrado.',
             'alicuota.required' => 'La alícuota es obligatoria.',
             'alicuota.numeric'  => 'La alícuota debe ser un número válido.',

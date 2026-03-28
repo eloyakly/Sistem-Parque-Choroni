@@ -45,7 +45,7 @@
 
         .header-info h2 {
             margin: 0 0 2px 0;
-            color: #0056b3;
+            color: #2e7d32;
             font-size: 13px;
             line-height: 1.3;
         }
@@ -64,7 +64,7 @@
 
         .divider {
             border: 0;
-            border-top: 2px solid #0056b3;
+            border-top: 2px solid #2e7d32;
             margin: 8px 0;
         }
 
@@ -78,7 +78,7 @@
         }
 
         .info-box {
-            background: #f1f8ff;
+            background: #e8f5e9;
             padding: 10px;
             border-radius: 6px;
             margin: 10px 0;
@@ -91,7 +91,7 @@
 
         .info-box hr {
             border: 0;
-            border-top: 1px solid #cce5ff;
+            border-top: 1px solid #c8e6c9;
             margin: 6px 0;
         }
 
@@ -133,7 +133,7 @@
         .footer-info h4 {
             margin: 0 0 6px 0;
             font-size: 11px;
-            color: #0056b3;
+            color: #2e7d32;
         }
 
         .footer-info p {
@@ -168,7 +168,7 @@
                 <td class="header-info">
                     <h2>Condominio Conjunto Residencial Parque Choroní II</h2>
                     <p>Av. Prolongación 19 de Abril c/ Agustín Zerpa, Urb. Base Aragua, Maracay.</p>
-                    <p style="margin-top: 2px; font-size: 10px; color: #0056b3; font-weight: bold;">Recibo —
+                    <p style="margin-top: 2px; font-size: 10px; color: #2e7d32; font-weight: bold;">Recibo —
                         {{ ucfirst($mesRecibo) }}</p>
                 </td>
                 <td class="header-logo">

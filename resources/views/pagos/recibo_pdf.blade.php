@@ -37,7 +37,8 @@
                     <p style="margin-top: 2px; font-size: 10px; color: #2e7d32; font-weight: bold;">Recibo de Pago — Comprobante Nro: #P-{{ str_pad($pago->id, 5, '0', STR_PAD_LEFT) }}</p>
                 </td>
                 <td class="header-logo">
-                    @php
+                    <!-- Logo removido para compatibilidad -->   @php
+                         @php
                         $logoPath = public_path('logo.png');
                         $logoSrc = '';
                         if (file_exists($logoPath)) {
