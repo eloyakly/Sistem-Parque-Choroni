@@ -7,6 +7,9 @@ use App\Models\Factura;
 use App\Models\Apartamento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Mail\ReciboPagoMail;
 
 class PagoController extends Controller
 {
@@ -23,7 +26,12 @@ class PagoController extends Controller
                   ->orWhere('id', 'LIKE', "%$buscar%")
                   ->orWhereHas('apartamento', function($q) use ($buscar) {
                       $q->where('numero', 'LIKE', "%$buscar%")
-                        ->orWhere('torre', 'LIKE', "%$buscar%");
+                        ->orWhere('torre', 'LIKE', "%$buscar%")
+                        ->orWhereHas('propietario', function($sq) use ($buscar) {
+                            $sq->where('cedula', 'LIKE', "%$buscar%")
+                               ->orWhere('nombre', 'LIKE', "%$buscar%")
+                               ->orWhere('apellido', 'LIKE', "%$buscar%");
+                        });
                   });
         }
 
@@ -100,7 +108,7 @@ class PagoController extends Controller
 
             DB::commit();
 
-            return redirect()->route('pagos.index')->with('exito', 'Pago registrado correctamente. La deuda del apartamento y el recibo han sido actualizados.');
+            return redirect()->route('pagos.index')->with('exito', 'Pago registrado correctamente. La deuda del apartamento y el recibo han sido actualizados.')->with('nuevo_pago_id', $pago->id);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withInput()->with('error', 'Ocurrió un error al registrar el pago: ' . $e->getMessage());
@@ -167,6 +175,58 @@ class PagoController extends Controller
     }
 
     /**
+     * Imprimir Lista de Deudores
+     */
+    public function imprimirDeudores(Request $request)
+    {
+        $query = Apartamento::with('propietario')->where('deuda_actual', '>', 0);
+        
+        if ($request->filled('buscar')) {
+            $buscar = $request->buscar;
+            $query->where(function($q) use ($buscar) {
+                $q->whereHas('propietario', function($sq) use ($buscar) {
+                    $sq->where('nombre', 'LIKE', "%$buscar%")
+                      ->orWhere('apellido', 'LIKE', "%$buscar%")
+                      ->orWhere('cedula', 'LIKE', "%$buscar%");
+                })->orWhere('numero', 'LIKE', "%$buscar%");
+            });
+        }
+
+        if ($request->filled('monto_min')) {
+            $query->where('deuda_actual', '>=', $request->monto_min);
+        }
+
+        if ($request->filled('monto_max')) {
+            $query->where('deuda_actual', '<=', $request->monto_max);
+        }
+
+        if ($request->filled('torre')) {
+            $query->where('torre', $request->torre);
+        }
+
+        $orden = $request->get('orden', 'deuda_desc');
+        switch ($orden) {
+            case 'deuda_asc':
+                $query->orderBy('deuda_actual', 'asc');
+                break;
+            case 'numero_asc':
+                $query->orderBy('numero', 'asc');
+                break;
+            case 'numero_desc':
+                $query->orderBy('numero', 'desc');
+                break;
+            case 'deuda_desc':
+            default:
+                $query->orderBy('deuda_actual', 'desc');
+                break;
+        }
+
+        $deudores = $query->get();
+        $pdf = Pdf::loadView('pagos.deudores_pdf', compact('deudores', 'request'));
+        return $pdf->stream('Listado_Deudores_' . date('Y-m-d') . '.pdf');
+    }
+
+    /**
      * Procesar un abono inteligente desde el Panel de Deudores
      */
     public function abonarDeuda(Request $request)
@@ -188,7 +248,7 @@ class PagoController extends Controller
             $montoAbono = $request->monto;
 
             // 1. Crear el registro general de pago asociado al apartamento
-            Pago::create([
+            $pago = Pago::create([
                 'apartamento_id' => $apartamento->id,
                 'monto'          => $montoAbono,
                 'fecha_pago'     => $request->fecha_pago,
@@ -225,11 +285,35 @@ class PagoController extends Controller
             }
 
             DB::commit();
-            return redirect()->back()->with('exito', 'Abono registrado con éxito. El pago fue debitado de la deuda total y aplicado a sus recibos pendientes en orden de antigüedad.');
+            return redirect()->back()->with('exito', 'Abono registrado con éxito. El pago fue debitado de la deuda total y aplicado a sus recibos pendientes en orden de antigüedad.')->with('nuevo_pago_id', $pago->id);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Ocurrió un error al procesar el abono: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Descargar recibo en PDF
+     */
+    public function descargarRecibo(Pago $pago)
+    {
+        $pago->load('apartamento.propietario', 'apartamento.tipo');
+        $pdf = Pdf::loadView('pagos.recibo_pdf', compact('pago'));
+        return $pdf->stream('Recibo_Pago_' . str_pad($pago->id, 5, '0', STR_PAD_LEFT) . '.pdf');
+    }
+
+    /**
+     * Enviar recibo por correo
+     */
+    public function enviarRecibo(Pago $pago)
+    {
+        $pago->load('apartamento.propietario', 'apartamento.tipo');
+        $pdf = Pdf::loadView('pagos.recibo_pdf', compact('pago'));
+        $pdfContent = $pdf->output();
+
+        Mail::to($pago->apartamento->propietario->email)->send(new ReciboPagoMail($pago, $pdfContent));
+
+        return redirect()->back()->with('exito', 'Recibo de pago enviado exitosamente a ' . $pago->apartamento->propietario->email . '.');
     }
 
     /**

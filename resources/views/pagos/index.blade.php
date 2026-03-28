@@ -25,7 +25,7 @@
 
     <div class="tarjeta" style="margin-bottom: 1rem;">
         <form action="{{ route('pagos.index') }}" method="GET" style="display: flex; gap: 1rem; align-items: center;">
-            <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Buscar por referencia o apartamento..."
+            <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Buscar por referencia, apartamento o propietario..."
                 style="padding: 0.6rem; border-radius: 6px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto); flex: 1;">
             <button class="boton boton-primario" type="submit">Buscar</button>
             @if(request('buscar'))
@@ -48,6 +48,7 @@
                         <th style="padding: 1rem;">Inmueble</th>
                         <th style="padding: 1rem;">Monto</th>
                         <th style="padding: 1rem;">Método</th>
+                        <th style="padding: 1rem; text-align: center;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -62,10 +63,30 @@
                         <td style="padding: 1rem;">{{ $pago->apartamento->numero }} ({{ $pago->apartamento->torre }})</td>
                         <td style="padding: 1rem; color: #2e7d32; font-weight: bold;">$ {{ number_format($pago->monto, 2) }}</td>
                         <td style="padding: 1rem;">{{ ucfirst($pago->metodo_pago) }}</td>
+                        <td style="padding: 1rem; text-align: center;">
+                            <a href="{{ route('pagos.recibo', $pago) }}" target="_blank" class="boton" style="padding: 0.4rem 0.8rem; border: 1px solid var(--color-borde); border-radius: 4px; background: transparent; color: var(--color-texto); font-size: 0.85rem; margin-right: 0.5rem;" title="Ver/Imprimir Recibo">
+                                🖨️
+                            </a>
+                            <form action="{{ route('pagos.enviar_recibo', $pago) }}" method="POST" style="display:inline;">
+                                @csrf
+                                <button type="submit" class="boton boton-primario" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" title="Enviar por Correo">
+                                    📧 Enviar
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
         @endif
     </div>
+    @if(session('nuevo_pago_id'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Abrir el recibo en una nueva pestaña
+                const urlRecibo = '{{ route("pagos.recibo", session("nuevo_pago_id")) }}';
+                window.open(urlRecibo, '_blank');
+            });
+        </script>
+    @endif
 @endsection

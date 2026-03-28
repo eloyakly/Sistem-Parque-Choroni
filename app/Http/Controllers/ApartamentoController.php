@@ -127,9 +127,19 @@ class ApartamentoController extends Controller
      */
     public function destroy(Apartamento $apartamento)
     {
-        $apartamento->delete();
+        try {
+            if ($apartamento->facturas()->count() > 0 || $apartamento->pagos()->count() > 0) {
+                return redirect()->route('apartamentos.index')
+                    ->with('error', 'No se puede eliminar el inmueble de la ' . $apartamento->torre . ' porque tiene recibos o pagos asociados.');
+            }
 
-        return redirect()->route('apartamentos.index')
-            ->with('exito', 'Apartamento eliminado correctamente.');
+            $apartamento->delete();
+
+            return redirect()->route('apartamentos.index')
+                ->with('exito', 'Apartamento eliminado correctamente.');
+        } catch (\Exception $e) {
+            return redirect()->route('apartamentos.index')
+                ->with('error', 'Ocurrió un error al eliminar el apartamento. Asegúrese de que no tenga registros financieros asociados.');
+        }
     }
 }

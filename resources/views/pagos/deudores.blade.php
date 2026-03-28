@@ -8,6 +8,11 @@
             <h1 style="color: var(--color-texto); font-size: 2rem; margin: 0;">Cartera de Deudores</h1>
             <p style="color: var(--color-texto-secundario); margin-top: 0.5rem;">Gestione los atrasos y efectúe cobranzas directas a apartamentos en mora.</p>
         </div>
+        <div>
+            <button type="button" onclick="imprimirConFiltros()" class="boton boton-primario" style="background: var(--color-texto); display: flex; align-items: center; gap: 0.5rem;">
+                🖨️ Imprimir Lista
+            </button>
+        </div>
     </div>
 
     @if(session('exito'))
@@ -22,7 +27,7 @@
     @endif
 
     <div class="tarjeta" style="margin-bottom: 2rem;">
-        <form action="{{ route('pagos.deudores') }}" method="GET">
+        <form id="formFiltros" action="{{ route('pagos.deudores') }}" method="GET">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; align-items: end;">
                 <!-- Búsqueda General -->
                 <div style="display: flex; flex-direction: column; gap: 0.5rem; flex: 2; grid-column: span 2;">
@@ -88,7 +93,7 @@
                 <thead>
                     <tr style="border-bottom: 2px solid var(--color-borde); color: var(--color-texto-secundario);">
                         <th style="padding: 1rem;">Inmueble</th>
-                        <th style="padding: 1rem;">Propietario / Cédula</th>
+                        <th style="padding: 1rem;">Propietario / Contacto</th>
                         <th style="padding: 1rem; text-align: right;">Deuda Acumulada</th>
                         <th style="padding: 1rem; text-align: center;">Acciones</th>
                     </tr>
@@ -101,8 +106,8 @@
                                 <small style="color: var(--color-texto-secundario);">Torre {{ $deudor->torre }}</small>
                             </td>
                             <td style="padding: 1rem;">
-                                {{ $deudor->propietario->nombre }} {{ $deudor->propietario->apellido }}<br>
-                                <small style="color: var(--color-texto-secundario);">V-{{ $deudor->propietario->cedula }}</small>
+                                <strong>{{ $deudor->propietario->nombre }} {{ $deudor->propietario->apellido }}</strong> (V-{{ $deudor->propietario->cedula }})<br>
+                                <small style="color: var(--color-texto-secundario);">📞 {{ $deudor->propietario->telefono ?? 'N/A' }} | ✉️ {{ $deudor->propietario->email ?? 'N/A' }}</small>
                             </td>
                             <td style="padding: 1rem; text-align: right; color: #c62828; font-weight: bold; font-size: 1.1rem;">
                                 $ {{ number_format($deudor->deuda_actual, 2) }}
@@ -110,7 +115,6 @@
                             <td style="padding: 1rem; text-align: center;">
                                 <div style="display: flex; gap: 0.5rem; justify-content: center;">
                                     <button onclick="abrirModalAbono({{ $deudor->id }}, '{{ $deudor->numero }}', '{{ $deudor->torre }}', {{ $deudor->deuda_actual }})" class="boton boton-primario" style="background: #2e7d32; border: none; padding: 0.5rem 1rem;">Abonar</button>
-                                    <a href="{{ route('pagos.create') }}" class="boton" style="background: var(--color-borde); padding: 0.5rem 1rem;">Opciones</a>
                                 </div>
                             </td>
                         </tr>
@@ -179,6 +183,19 @@
             document.getElementById('abono_monto').value = deuda.toFixed(2);
             document.getElementById('abono_texto').innerHTML = `Se descontará automáticamente de la deuda del <strong>Apto ${numero}</strong> (Torre ${torre}) y se saldarán proporcionalmente sus recibos más antiguas en cola.`;
             document.getElementById('modalAbono').showModal();
+        }
+
+        function imprimirConFiltros() {
+            const form = document.getElementById('formFiltros');
+            const urlOriginal = form.action;
+            form.action = "{{ route('pagos.deudores.imprimir') }}";
+            form.target = "_blank"; // Abrir en nueva pestaña
+            form.submit();
+            // Restaurar configuración original
+            setTimeout(() => {
+                form.action = urlOriginal;
+                form.target = "_self";
+            }, 100);
         }
     </script>
 @endsection
