@@ -46,7 +46,14 @@ class FacturaController extends Controller
         
         $tipos = TipoApartamento::orderBy('nombre')->get();
 
-        return view('recibos.crear', compact('apartamentos', 'gastos', 'tipos'));
+        $facturadosPorMes = [];
+        foreach ($gastos as $gasto) {
+            $mesFormateado = \Carbon\Carbon::parse($gasto->mes_anio)->translatedFormat('F Y');
+            $descripcion = "Mensualidad de Condominio - " . ucfirst($mesFormateado);
+            $facturadosPorMes[$gasto->id] = \App\Models\Factura::where('descripcion', $descripcion)->pluck('apartamento_id')->toArray();
+        }
+
+        return view('recibos.crear', compact('apartamentos', 'gastos', 'tipos', 'facturadosPorMes'));
     }
 
     /**
@@ -239,7 +246,12 @@ class FacturaController extends Controller
         $apartamento = $recibo->apartamento;
         
         if (!$apartamento) {
-            return redirect()->route('recibos.index')->with('error', 'El apartamento asociado a este recibo ya no existe.');
+            return response(
+                '<div style="font-family: sans-serif; text-align: center; margin-top: 20%; color: #842029; background-color: #f8d7da; padding: 2rem; border-radius: 8px; border: 1px solid #f5c2c7; max-width: 80%; margin-left: auto; margin-right: auto;">' .
+                '<h2 style="margin-top:0;">⚠️ Inmueble No Encontrado</h2>' .
+                '<p>El apartamento asociado a este recibo ya no existe en el sistema.</p>' .
+                '</div>', 
+            404)->header('Content-Type', 'text/html; charset=UTF-8');
         }
 
         $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre ?? 'Inmueble');
@@ -262,7 +274,12 @@ class FacturaController extends Controller
             }
         } catch (\Exception $e) {}
 
-        return redirect()->route('recibos.index')->with('error', 'El documento PDF no se encuentra disponible ni pudo ser generado dinámicamente.');
+        return response(
+            '<div style="font-family: sans-serif; text-align: center; margin-top: 20%; color: #842029; background-color: #f8d7da; padding: 2rem; border-radius: 8px; border: 1px solid #f5c2c7; max-width: 80%; margin-left: auto; margin-right: auto;">' .
+            '<h2 style="margin-top:0;">⚠️ PDF No Disponible</h2>' .
+            '<p>El documento PDF no se encuentra disponible en los registros ni pudo ser generado dinámicamente.</p>' .
+            '</div>', 
+        404)->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
     /**

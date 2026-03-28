@@ -3,6 +3,33 @@
 @section('titulo', 'Registrar Cobro')
 
 @section('contenido')
+    <!-- Tom Select CDN para selectores de texto dinámicos -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.default.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
+    <style>
+        .ts-control {
+            border-radius: 8px;
+            border: 1px solid var(--color-borde);
+            background: var(--color-superficie);
+            color: var(--color-texto);
+            padding: 0.8rem;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        .ts-dropdown {
+            border-radius: 8px;
+            background: var(--color-superficie);
+            color: var(--color-texto);
+            border: 1px solid var(--color-borde);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .ts-dropdown .active {
+            background-color: var(--color-acentuar-suave);
+            color: var(--color-texto);
+        }
+    </style>
+
     <div class="tarjeta">
         <h1>Registrar Pago Recibido</h1>
         <p style="color: var(--color-texto-secundario);">Ingrese los detalles del pago para ser abonado a un recibo pendiente.</p>
@@ -28,14 +55,14 @@
             @csrf
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                <!-- Recibos que deudados -->
+                <!-- Recibos adeudados -->
                 <div style="display: flex; flex-direction: column; gap: 0.5rem; grid-column: span 2;">
-                    <label style="font-weight: 500;">Recibo a Abonar</label>
-                    <select name="factura_id" id="factura_id" required style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto);">
+                    <label style="font-weight: 500;">Recibo a Abonar (Busque por Inmueble, Propietario o Concepto)</label>
+                    <select name="factura_id" id="factura_id" required style="width: 100%; border-radius: 8px;">
                         <option value="" data-saldo="0">Seleccione un Recibo Pendiente...</option>
                         @foreach($facturas as $factura)
                             <option value="{{ $factura->id }}" data-saldo="{{ $factura->saldo_pendiente }}" {{ old('factura_id') == $factura->id ? 'selected' : '' }}>
-                                {{ $factura->apartamento->numero }} - {{ $factura->descripcion }} (Deuda: $ {{ number_format($factura->saldo_pendiente, 2) }})
+                                V-{{ $factura->apartamento->propietario->cedula }} - Apto {{ $factura->apartamento->numero }} ({{ $factura->apartamento->propietario->nombre }} {{ $factura->apartamento->propietario->apellido }}) - {{ $factura->descripcion }} (Deuda: $ {{ number_format($factura->saldo_pendiente, 2) }})
                             </option>
                         @endforeach
                     </select>
@@ -86,9 +113,26 @@
             const inputMonto = document.getElementById('input-monto');
             const maxAviso = document.getElementById('max-aviso');
 
+            const tsFactura = new TomSelect("#factura_id", {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
+
             function sugerirMonto() {
-                const opcion = selectFactura.options[selectFactura.selectedIndex];
-                const saldo = parseFloat(opcion.getAttribute('data-saldo'));
+                const facturaId = tsFactura.getValue();
+                if(!facturaId) {
+                    inputMonto.value = '';
+                    maxAviso.textContent = 'Seleccione recibo para ver monto base.';
+                    inputMonto.removeAttribute('data-base');
+                    inputMonto.dispatchEvent(new Event('input'));
+                    return;
+                }
+
+                const originalOption = document.querySelector(`#factura_id option[value="${facturaId}"]`);
+                const saldo = parseFloat(originalOption.getAttribute('data-saldo'));
                 
                 if (saldo && saldo > 0) {
                     inputMonto.value = saldo.toFixed(2);
@@ -100,12 +144,13 @@
                     maxAviso.textContent = 'Seleccione recibo para ver monto base.';
                     inputMonto.removeAttribute('data-base');
                 }
+                inputMonto.dispatchEvent(new Event('input'));
             }
 
-            selectFactura.addEventListener('change', sugerirMonto);
+            tsFactura.on('change', sugerirMonto);
             
             // Si no hay valor previo escrito pero hay factura old seleccionada, sugerir.
-            if(selectFactura.value && !inputMonto.value) {
+            if(tsFactura.getValue() && !inputMonto.value) {
                 sugerirMonto();
             }
 

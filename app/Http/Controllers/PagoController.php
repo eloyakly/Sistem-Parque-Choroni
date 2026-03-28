@@ -106,6 +106,16 @@ class PagoController extends Controller
             // Descontar la deuda total del apartamento (Si sobra, queda en negativo como Saldo a Favor)
             $apartamento->decrement('deuda_actual', $montoPago);
 
+            // Generar y Guardar PDF
+            $pago->load('apartamento.propietario', 'apartamento.tipo');
+            $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre ?? 'Inmueble');
+            $mesAnioPdf = \Carbon\Carbon::parse($pago->created_at)->format('Y-m');
+            $pdfFolder = "pagos_abonos/{$tipoInmueble}/{$mesAnioPdf}";
+            $pdfFileName = "pago_{$pago->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
+
+            $pdf = Pdf::loadView('pagos.recibo_pdf', compact('pago'));
+            \Illuminate\Support\Facades\Storage::disk('public')->put("{$pdfFolder}/{$pdfFileName}", $pdf->output());
+
             DB::commit();
 
             return redirect()->route('pagos.index')->with('exito', 'Pago registrado correctamente. La deuda del apartamento y el recibo han sido actualizados.')->with('nuevo_pago_id', $pago->id);
@@ -284,6 +294,16 @@ class PagoController extends Controller
                 }
             }
 
+            // Generar y Guardar PDF
+            $pago->load('apartamento.propietario', 'apartamento.tipo');
+            $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre ?? 'Inmueble');
+            $mesAnioPdf = \Carbon\Carbon::parse($pago->created_at)->format('Y-m');
+            $pdfFolder = "pagos_abonos/{$tipoInmueble}/{$mesAnioPdf}";
+            $pdfFileName = "pago_{$pago->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
+
+            $pdf = Pdf::loadView('pagos.recibo_pdf', compact('pago'));
+            \Illuminate\Support\Facades\Storage::disk('public')->put("{$pdfFolder}/{$pdfFileName}", $pdf->output());
+
             DB::commit();
             return redirect()->back()->with('exito', 'Abono registrado con éxito. El pago fue debitado de la deuda total y aplicado a sus recibos pendientes en orden de antigüedad.')->with('nuevo_pago_id', $pago->id);
         } catch (\Exception $e) {
@@ -298,6 +318,16 @@ class PagoController extends Controller
     public function descargarRecibo(Pago $pago)
     {
         $pago->load('apartamento.propietario', 'apartamento.tipo');
+        $apartamento = $pago->apartamento;
+        
+        $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre ?? 'Inmueble');
+        $mesAnioPdf = \Carbon\Carbon::parse($pago->created_at)->format('Y-m');
+        $pdfPath = "pagos_abonos/{$tipoInmueble}/{$mesAnioPdf}/pago_{$pago->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
+            return response()->file(storage_path('app/public/' . $pdfPath));
+        }
+
         $pdf = Pdf::loadView('pagos.recibo_pdf', compact('pago'));
         return $pdf->stream('Recibo_Pago_' . str_pad($pago->id, 5, '0', STR_PAD_LEFT) . '.pdf');
     }
@@ -308,8 +338,18 @@ class PagoController extends Controller
     public function enviarRecibo(Pago $pago)
     {
         $pago->load('apartamento.propietario', 'apartamento.tipo');
-        $pdf = Pdf::loadView('pagos.recibo_pdf', compact('pago'));
-        $pdfContent = $pdf->output();
+        $apartamento = $pago->apartamento;
+
+        $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre ?? 'Inmueble');
+        $mesAnioPdf = \Carbon\Carbon::parse($pago->created_at)->format('Y-m');
+        $pdfPath = "pagos_abonos/{$tipoInmueble}/{$mesAnioPdf}/pago_{$pago->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
+            $pdfContent = \Illuminate\Support\Facades\Storage::disk('public')->get($pdfPath);
+        } else {
+            $pdf = Pdf::loadView('pagos.recibo_pdf', compact('pago'));
+            $pdfContent = $pdf->output();
+        }
 
         Mail::to($pago->apartamento->propietario->email)->send(new ReciboPagoMail($pago, $pdfContent));
 

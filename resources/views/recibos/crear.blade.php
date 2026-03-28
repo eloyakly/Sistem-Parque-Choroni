@@ -257,6 +257,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const gastosMesData = @json($gastos);
             const apartamentosData = @json($apartamentos);
+            const facturadosPorMesData = @json($facturadosPorMes);
             
             const inputAlicuota = document.getElementById('input-alicuota');
             const baseGastos = document.getElementById('base-gastos');
@@ -271,16 +272,48 @@
             const tsPropietario = new TomSelect("#select-propietario", { create: false });
             const tsApto = new TomSelect("#select-apartamento", { create: false });
 
-            // Lógica Filtro de Propietario a Apartamento
-            tsPropietario.on('change', function(propId) {
+            let aptosDisponiblesParaMes = [...apartamentosData]; // arrancar con todos
+
+            function actualizarFiltrosPorMes(mesId) {
+                if (!mesId || !facturadosPorMesData[mesId]) {
+                    aptosDisponiblesParaMes = [...apartamentosData];
+                } else {
+                    const facturados = facturadosPorMesData[mesId];
+                    aptosDisponiblesParaMes = apartamentosData.filter(a => !facturados.includes(a.id));
+                }
+
+                // Actualizar options Propietario
+                const curProp = tsPropietario.getValue();
+                tsPropietario.clear();
+                tsPropietario.clearOptions();
+                
+                const propsDisponibles = new Map();
+                aptosDisponiblesParaMes.forEach(a => {
+                    if (a.propietario) propsDisponibles.set(a.propietario.id, a.propietario);
+                });
+
+                propsDisponibles.forEach(prop => {
+                    tsPropietario.addOption({
+                        value: prop.id,
+                        text: `V-${prop.cedula} - ${prop.nombre} ${prop.apellido}`
+                    });
+                });
+                tsPropietario.refreshOptions(false);
+                if (propsDisponibles.has(parseInt(curProp))) tsPropietario.setValue(curProp);
+
+                // Llamar al on-change del propietario para repoblar apartamentos
+                refrescarAptos(tsPropietario.getValue());
+            }
+
+            function refrescarAptos(propId) {
                 const currentAptoId = tsApto.getValue();
                 
                 tsApto.clear();
                 tsApto.clearOptions();
                 
-                let aptosFiltrados = apartamentosData;
+                let aptosFiltrados = aptosDisponiblesParaMes;
                 if (propId) {
-                    aptosFiltrados = apartamentosData.filter(a => a.propietario_id.toString() === propId);
+                    aptosFiltrados = aptosDisponiblesParaMes.filter(a => a.propietario_id.toString() === propId);
                 }
                 
                 aptosFiltrados.forEach(apto => {
@@ -294,7 +327,9 @@
                 if(aptosFiltrados.find(a => a.id.toString() === currentAptoId)) {
                     tsApto.setValue(currentAptoId);
                 }
-            });
+            }
+
+            tsPropietario.on('change', refrescarAptos);
 
             function recalcular() {
                 const mesId = parseInt(tsMes.getValue()) || 0;
@@ -341,7 +376,10 @@
                 montoTotal.textContent = `$ ${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             }
 
-            tsMes.on('change', recalcular);
+            tsMes.on('change', function() {
+                recalcular();
+                actualizarFiltrosPorMes(tsMes.getValue());
+            });
             tsApto.on('change', recalcular);
             
             // Lógica de Previsualización Masiva
