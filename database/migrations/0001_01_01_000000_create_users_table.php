@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
 
 return new class extends Migration
 {
@@ -35,6 +37,12 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+        // Insertar el usuario
+        DB::table('users')->insert([
+            'name' => 'Admin Inicial', // Requerido por tu esquema actual
+            'email' => 'parquechoroni2.nueva@gmail.com',
+            'password' => 'AdministradorParqueChoroni2026'
+        ]);
     }
 
     /**

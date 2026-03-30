@@ -47,7 +47,7 @@ class ApartamentoController extends Controller
     public function store(Request $request)
     {
         $datos = $request->validate([
-            'torre'                => 'required|string|in:Torre 1,Torre 2,Torre 3,Torre 4',
+            'torre'                => 'required|string|in:Torre A,Torre B,Torre C',
             'numero'               => 'required|string|max:20',
             'tipo_apartamento_id'  => 'required|exists:tipo_apartamentos,id',
             'propietario_id'       => 'required|exists:propietarios,id',

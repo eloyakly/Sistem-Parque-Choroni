@@ -22,13 +22,13 @@
             @csrf
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    @php $isCustom = !in_array(old('nombre'), ['', 'Estudio', 'Estándar', 'Penthouse']) && old('nombre'); @endphp
+                    @php $isCustom = !in_array(old('nombre'), ['', 'PB1', 'PB6', 'Penthouse']) && old('nombre'); @endphp
                     <label style="font-weight: 500;">Nombre del Tipo</label>
                     <select id="select-nombre" style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto);" required>
                         <option value="">— Seleccione una designación —</option>
-                        <option value="Estudio" {{ old('nombre') == 'Estudio' ? 'selected' : '' }}>Estudio</option>
-                        <option value="Estándar" {{ old('nombre') == 'Estándar' ? 'selected' : '' }}>Estándar</option>
-                        <option value="Penthouse" {{ old('nombre') == 'Penthouse' ? 'selected' : '' }}>Penthouse</option>
+                        <option value="PB1" {{ old('nombre') == 'PB1' ? 'selected' : '' }}>PB1</option>
+                        <option value="PB6" {{ old('nombre') == 'PB6' ? 'selected' : '' }}>PB6</option>
+                        <option value="GENERAL" {{ old('nombre') == 'GENERAL' ? 'selected' : '' }}>GENERAL</option>
                         <option value="Otro" {{ $isCustom ? 'selected' : '' }}>Otro (Especificar)</option>
                     </select>
 
