@@ -385,6 +385,65 @@ class PagoController extends Controller
      */
     public function destroy(Pago $pago)
     {
-        return redirect()->route('pagos.index')->with('error', 'La eliminación de pagos requiere reversión completa y no está habilitada en esta versión.');
+        try {
+            DB::beginTransaction();
+
+            $pago->load('apartamento.propietario', 'apartamento.tipo');
+            $apartamento = $pago->apartamento;
+            $montoRevertir = $pago->monto;
+
+            // 1. Devolver la deuda al balance del apartamento
+            $apartamento->increment('deuda_actual', $montoRevertir);
+
+            // 2. Revertir la aplicación en las facturas (más recientes primero)
+            // Buscamos facturas que tengan saldo_pendiente < monto_total (fueron pagadas o abonadas)
+            $facturasAfectadas = Factura::where('apartamento_id', $apartamento->id)
+                ->whereRaw('saldo_pendiente < monto_total')
+                ->orderBy('fecha_vencimiento', 'desc')
+                ->get();
+
+            $montoRestante = $montoRevertir;
+            foreach ($facturasAfectadas as $factura) {
+                if ($montoRestante <= 0) break;
+
+                $pagadoEnEstaFactura = $factura->monto_total - $factura->saldo_pendiente;
+                
+                if ($montoRestante >= $pagadoEnEstaFactura) {
+                    // Reabrimos la factura totalmente
+                    $montoRestante -= $pagadoEnEstaFactura;
+                    $factura->update([
+                        'saldo_pendiente' => $factura->monto_total,
+                        'estado'          => 'no_pagado'
+                    ]);
+                } else {
+                    // Reabrimos parcialmente
+                    $factura->update([
+                        'saldo_pendiente' => $factura->saldo_pendiente + $montoRestante,
+                        'estado'          => 'pago_parcial'
+                    ]);
+                    $montoRestante = 0;
+                }
+            }
+
+            // 3. Borrar el archivo PDF físico
+            $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre ?? 'Inmueble');
+            $mesAnioPdf = \Carbon\Carbon::parse($pago->created_at)->format('Y-m');
+            $pdfFolder = "pagos_abonos/{$tipoInmueble}/{$mesAnioPdf}";
+            $pdfFileName = "pago_{$pago->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
+            $pdfPath = "{$pdfFolder}/{$pdfFileName}";
+
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($pdfPath);
+            }
+
+            // 4. Eliminar el registro del pago
+            $pago->delete();
+
+            DB::commit();
+            return redirect()->route('pagos.index')->with('exito', 'Pago eliminado correctamente. La deuda del apartamento ha sido restaurada.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('pagos.index')->with('error', 'Error al eliminar el pago: ' . $e->getMessage());
+        }
     }
 }

@@ -56,7 +56,7 @@
                 <tbody>
                     @foreach($recibos as $recibo)
                     <tr style="border-bottom: 1px solid var(--color-borde);">
-                        <td style="padding: 1rem; font-weight: bold;">#{{ str_pad($recibo->id, 5, '0', STR_PAD_LEFT) }}</td>
+                        <td style="padding: 1rem; font-weight: bold;">{{ str_pad($recibo->id, 5, '0', STR_PAD_LEFT) }}</td>
                         <td style="padding: 1rem;">{{ $recibo->descripcion }}</td>
                         <td style="padding: 1rem;">
                             {{ $recibo->apartamento->numero }} ({{ $recibo->apartamento->torre }})

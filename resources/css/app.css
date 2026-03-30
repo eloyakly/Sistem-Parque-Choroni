@@ -66,6 +66,7 @@ main {
     font-weight: 500;
     transition: all 0.2s;
     font-family: inherit;
+    text-decoration: none;
 }
 
 .boton-primario {

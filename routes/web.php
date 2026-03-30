@@ -40,4 +40,8 @@ Route::middleware([\App\Http\Middleware\CheckSession::class])->group(function ()
     Route::get('/pagos/{pago}/recibo', [PagoController::class, 'descargarRecibo'])->name('pagos.recibo');
     Route::post('/pagos/{pago}/enviar-recibo', [PagoController::class, 'enviarRecibo'])->name('pagos.enviar_recibo');
     Route::resource('/pagos', PagoController::class);
+
+    // Rutas de Estado de Cuenta
+    Route::get('/estado-cuenta/imprimir', [\App\Http\Controllers\EstadoCuentaController::class, 'imprimir'])->name('estado_cuenta.imprimir');
+    Route::get('/estado-cuenta', [\App\Http\Controllers\EstadoCuentaController::class, 'index'])->name('estado_cuenta.index');
 });

@@ -28,5 +28,8 @@
         <a href="{{ route('pagos.deudores') }}" class="item-menu {{ Request::is('deudores*') ? 'activo' : '' }}">
             <span>⚠️ Deudores</span>
         </a>
+        <a href="{{ route('estado_cuenta.index') }}" class="item-menu {{ Request::is('estado-cuenta*') ? 'activo' : '' }}">
+            <span>📊 Estado de Cuenta</span>
+        </a>
     </nav>
 </aside>

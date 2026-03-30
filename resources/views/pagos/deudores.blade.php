@@ -149,10 +149,7 @@
                         <select name="metodo_pago" required style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto);">
                             <option value="">Seleccione...</option>
                             <option value="Transferencia">Transferencia Bancaria</option>
-                            <option value="Pago Móvil">Pago Móvil</option>
-                            <option value="Zelle">Zelle</option>
-                            <option value="Efectivo USD">Efectivo USD</option>
-                            <option value="Efectivo Bs">Efectivo Bs</option>
+                            <option value="Efectivo - USD">Efectivo - USD</option>  
                         </select>
                     </div>
 

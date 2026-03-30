@@ -73,6 +73,13 @@
                                     📧 Enviar
                                 </button>
                             </form>
+                            <form action="{{ route('pagos.destroy', $pago) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Está seguro de eliminar este pago? Esta acción revertirá la deuda del apartamento y reabrirá sus facturas pendientes.')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="boton" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background: #e74c3c; color: white;" title="Eliminar Pago">
+                                    🗑️ Eliminar
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     @endforeach

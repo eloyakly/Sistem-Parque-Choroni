@@ -87,9 +87,8 @@
                     <label style="font-weight: 500;">Método de Pago</label>
                     <select name="metodo_pago" required style="padding: 0.8rem; border-radius: 8px; border: 1px solid var(--color-borde); background: var(--color-superficie); color: var(--color-texto);">
                         <option value="transferencia" {{ old('metodo_pago') == 'transferencia' ? 'selected' : '' }}>Transferencia</option>
-                        <option value="efectivo" {{ old('metodo_pago') == 'efectivo' ? 'selected' : '' }}>Efectivo</option>
-                        <option value="pago móvil" {{ old('metodo_pago') == 'pago móvil' ? 'selected' : '' }}>Pago Móvil</option>
-                        <option value="zelle" {{ old('metodo_pago') == 'zelle' ? 'selected' : '' }}>Zelle</option>
+                        <option value="efectivo - USD" {{ old('metodo_pago') == 'efectivo - USD' ? 'selected' : '' }}>Efectivo - USD</option>
+
                     </select>
                 </div>
 

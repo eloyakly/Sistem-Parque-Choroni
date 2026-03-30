@@ -183,7 +183,7 @@
             <p>Estimado/a <strong>{{ $pago->apartamento->propietario->nombre }}
                     {{ $pago->apartamento->propietario->apellido }}</strong>,</p>
             <p>Se emite el presente recibo como comprobante de pago procesado a favor de su inmueble
-                <strong>{{ $pago->apartamento->numero }}</strong> (Torre {{ $pago->apartamento->torre }}).</p>
+                <strong>{{ $pago->apartamento->numero }}</strong> ({{ $pago->apartamento->torre }}).</p>
 
             <div class="info-box">
                 <p><strong>Propietario:</strong> {{ $pago->apartamento->propietario->nombre }}

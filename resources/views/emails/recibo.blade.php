@@ -202,7 +202,7 @@
             <p>Estimado/a <strong>{{ $factura->apartamento->propietario->nombre }}
                     {{ $factura->apartamento->propietario->apellido }}</strong>,</p>
             <p>Se ha emitido un nuevo recibo de condominio correspondiente a su inmueble
-                <strong>{{ $factura->apartamento->numero }}</strong> (Torre {{ $factura->apartamento->torre }}).</p>
+                <strong>{{ $factura->apartamento->numero }}</strong> ({{ $factura->apartamento->torre }}).</p>
 
             <div class="info-box">
                 <p><strong>Propietario:</strong> {{ $factura->apartamento->propietario->nombre }}
