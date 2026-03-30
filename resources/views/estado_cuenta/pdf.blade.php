@@ -42,7 +42,7 @@
                 <tr>
                     <th>Nro</th>
                     <th>Inmueble</th>
-                    <th style="text-align: right;">Cargado / Debe (Mes Seleccionado)</th>
+                    <th style="text-align: right;">Cargado / Debe (Mes {{ \Carbon\Carbon::createFromFormat('Y-m', $mesSeleccionado)->translatedFormat('F Y') }})</th>
                     <th style="text-align: right;">Deuda Total Acumulada</th>
                 </tr>
             </thead>
