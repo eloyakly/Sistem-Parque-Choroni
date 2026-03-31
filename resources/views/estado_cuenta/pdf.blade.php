@@ -22,9 +22,18 @@
 <body>
 
     <div class="header">
-        <h1>Estado de Cuenta Financiero</h1>
-        <p>Condominio Parque Choroní II</p>
-        <p>Emitido el {{ date('d/m/Y h:i A') }}</p>
+        <table style="width: 100%; border: none;">
+            <tr>
+                <td style="width: 20%; border: none; text-align: left; vertical-align: middle;">
+                    <img src="{{ public_path('logo.png') }}" style="height: 60px;">
+                </td>
+                <td style="width: 80%; border: none; text-align: center; vertical-align: middle;">
+                    <h1>Cuentas por Cobrar</h1>
+                    <p>Condominio Parque Choroní II</p>
+                    <p>Emitido el {{ date('d/m/Y h:i A') }}</p>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="filtros-info">

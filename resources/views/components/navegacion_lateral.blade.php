@@ -29,7 +29,7 @@
             <span>⚠️ Deudores</span>
         </a>
         <a href="{{ route('estado_cuenta.index') }}" class="item-menu {{ Request::is('estado-cuenta*') ? 'activo' : '' }}">
-            <span>📊 Estado de Cuenta</span>
+            <span>📊 Cuentas por Cobrar</span>
         </a>
     </nav>
 </aside>

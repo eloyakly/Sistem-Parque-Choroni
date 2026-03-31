@@ -39,6 +39,12 @@ Route::middleware([\App\Http\Middleware\CheckSession::class])->group(function ()
     Route::post('/pagos/abonar-deuda', [PagoController::class, 'abonarDeuda'])->name('pagos.abonar');
     Route::get('/pagos/{pago}/recibo', [PagoController::class, 'descargarRecibo'])->name('pagos.recibo');
     Route::post('/pagos/{pago}/enviar-recibo', [PagoController::class, 'enviarRecibo'])->name('pagos.enviar_recibo');
+    
+    // Ingresos y Reportes
+    Route::get('/pagos/ingresos/imprimir', [PagoController::class, 'imprimirIngresos'])->name('pagos.ingresos.imprimir');
+    Route::get('/pagos/reporte-ingresos', [PagoController::class, 'reporteIngresos'])->name('pagos.reporte');
+    Route::get('/pagos/ingresos/{mes}', [PagoController::class, 'ingresosPorMes'])->name('pagos.ingresos.mes');
+    
     Route::resource('/pagos', PagoController::class);
 
     // Rutas de Estado de Cuenta

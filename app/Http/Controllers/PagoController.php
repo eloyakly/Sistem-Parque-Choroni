@@ -36,7 +36,18 @@ class PagoController extends Controller
         }
 
         $pagos = $query->get();
-        return view('pagos.index', compact('pagos'));
+
+        // ── Estadísticas de Ingresos ──────────────────────────────────────────
+        $totalPagos        = Pago::count();
+        $totalIngresado    = Pago::sum('monto');
+
+        // Desglose mensual: año-mes, cantidad de pagos, suma
+        $ingresosPorMes = Pago::selectRaw("DATE_FORMAT(fecha_pago, '%Y-%m') as mes, COUNT(*) as cantidad, SUM(monto) as total")
+            ->groupBy('mes')
+            ->orderBy('mes', 'desc')
+            ->get();
+
+        return view('pagos.index', compact('pagos', 'totalPagos', 'totalIngresado', 'ingresosPorMes'));
     }
 
     /**
@@ -444,6 +455,126 @@ class PagoController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('pagos.index')->with('error', 'Error al eliminar el pago: ' . $e->getMessage());
+        }
+    }
+    /**
+     * Reporte detallado de ingresos con filtros por mes y torre.
+     */
+    public function reporteIngresos(Request $request)
+    {
+        $mes = $request->get('mes', date('Y-m'));
+        $fechas = explode('-', $mes);
+        if (count($fechas) !== 2) {
+            return redirect()->route('pagos.index')->with('error', 'Mes inválido.');
+        }
+        $anio = $fechas[0];
+        $mesNum = $fechas[1];
+
+        $torres = Apartamento::distinct()->pluck('torre');
+        $torre = $request->get('torre', $torres->first());
+
+        $query = Pago::with('apartamento.propietario')
+            ->whereYear('fecha_pago', $anio)
+            ->whereMonth('fecha_pago', $mesNum);
+
+        if ($torre) {
+            $query->whereHas('apartamento', function($q) use ($torre) {
+                $q->where('torre', $torre);
+            });
+        }
+
+        $pagosMes = $query->orderBy('fecha_pago', 'desc')->get();
+        
+        $totalMes = $pagosMes->sum('monto');
+        $cantidadPagos = $pagosMes->count();
+        $cantidadApartamentos = $pagosMes->pluck('apartamento_id')->unique()->count();
+
+        $meses = [
+            '01' => 'Enero', '02' => 'Febrero', '03' => 'Marzo',
+            '04' => 'Abril', '05' => 'Mayo', '06' => 'Junio',
+            '07' => 'Julio', '08' => 'Agosto', '09' => 'Septiembre',
+            '10' => 'Octubre', '11' => 'Noviembre', '12' => 'Diciembre',
+        ];
+        $nombreMes = ($meses[$mesNum] ?? $mesNum) . ' ' . $anio;
+        
+        $torres = Apartamento::distinct()->pluck('torre');
+
+        return view('pagos.ingresos_mes', compact(
+            'pagosMes', 'mes', 'nombreMes', 'totalMes', 
+            'cantidadPagos', 'cantidadApartamentos', 'torres', 'torre'
+        ));
+    }
+
+    /**
+     * View for a specific month's income details (legacy or shortcut)
+     */
+    public function ingresosPorMes($mes)
+    {
+        return redirect()->route('pagos.reporte', ['mes' => $mes]);
+    }
+
+    /**
+     * Impresión de reporte de ingresos filtrado.
+     */
+    public function imprimirIngresos(Request $request)
+    {
+        if ($request->has('mes')) {
+            $mes = $request->mes;
+            $torres = Apartamento::distinct()->pluck('torre');
+            $torre = $request->get('torre', $torres->first());
+
+            $fechas = explode('-', $mes);
+            if (count($fechas) !== 2) {
+                return redirect()->route('pagos.index')->with('error', 'Mes inválido.');
+            }
+
+            $anio = $fechas[0];
+            $mesNum = $fechas[1];
+
+            $query = Pago::with('apartamento.propietario')
+                ->whereYear('fecha_pago', $anio)
+                ->whereMonth('fecha_pago', $mesNum);
+
+            if ($torre) {
+                $query->whereHas('apartamento', function($q) use ($torre) {
+                    $q->where('torre', $torre);
+                });
+            }
+
+            $pagosMes = $query->orderBy('fecha_pago', 'desc')->get();
+            $totalMes = $pagosMes->sum('monto');
+            $cantidadApartamentos = $pagosMes->pluck('apartamento_id')->unique()->count();
+
+            $meses = [
+                '01' => 'Enero', '02' => 'Febrero', '03' => 'Marzo',
+                '04' => 'Abril', '05' => 'Mayo', '06' => 'Junio',
+                '07' => 'Julio', '08' => 'Agosto', '09' => 'Septiembre',
+                '10' => 'Octubre', '11' => 'Noviembre', '12' => 'Diciembre',
+            ];
+            $nombreMes = ($meses[$mesNum] ?? $mesNum) . ' ' . $anio;
+
+            $pdf = Pdf::loadView('pagos.ingresos_mes_pdf', compact('pagosMes', 'nombreMes', 'totalMes', 'mes', 'torre', 'cantidadApartamentos'));
+            return $pdf->stream('Ingresos_' . str_replace(' ', '_', $nombreMes) . ($torre ? '_Torre_' . $torre : '') . '.pdf');
+
+        } else {
+            // Unificado con el reporte general si no hay mes
+            $totalPagos = Pago::count();
+            $totalIngresado = Pago::sum('monto');
+
+            $ingresosPorMes = Pago::selectRaw("DATE_FORMAT(fecha_pago, '%Y-%m') as mes, COUNT(*) as cantidad, SUM(monto) as total")
+                ->groupBy('mes')
+                ->orderBy('mes', 'desc')
+                ->get();
+
+            $meses = [
+                '01' => 'Enero', '02' => 'Febrero', '03' => 'Marzo',
+                '04' => 'Abril', '05' => 'Mayo', '06' => 'Junio',
+                '07' => 'Julio', '08' => 'Agosto', '09' => 'Septiembre',
+                '10' => 'Octubre', '11' => 'Noviembre', '12' => 'Diciembre',
+            ];
+                
+            $pdf = Pdf::loadView('pagos.ingresos_pdf', compact('totalPagos', 'totalIngresado', 'ingresosPorMes', 'meses'));
+            return $pdf->stream('Resumen_General_Ingresos.pdf');
         }
     }
 }

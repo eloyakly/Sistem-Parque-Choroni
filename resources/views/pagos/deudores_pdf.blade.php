@@ -20,9 +20,18 @@
 <body>
 
     <div class="header">
-        <h1>Cartera de Deudores - Parque Choroní II</h1>
-        <p>Reporte Oficial de Cobranzas</p>
-        <p>Generado el {{ date('d/m/Y h:i A') }}</p>
+        <table style="width: 100%; border: none;">
+            <tr>
+                <td style="width: 20%; border: none; text-align: left; vertical-align: middle;">
+                    <img src="{{ public_path('logo.png') }}" style="height: 60px;">
+                </td>
+                <td style="width: 80%; border: none; text-align: center; vertical-align: middle;">
+                    <h1>Cartera de Deudores - Parque Choroní II</h1>
+                    <p>Reporte Oficial de Cobranzas</p>
+                    <p>Generado el {{ date('d/m/Y h:i A') }}</p>
+                </td>
+            </tr>
+        </table>
     </div>
 
     @if($request->anyFilled(['buscar', 'monto_min', 'monto_max', 'torre']))
