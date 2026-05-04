@@ -11,7 +11,7 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Queue\SerializesModels;
 
-class ReciboPagoMail extends Mailable
+class ReciboPagoMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

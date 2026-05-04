@@ -25,8 +25,8 @@ WshShell.Run "php artisan serve", 0, False
 WshShell.Run "npm run dev", 0, False
 
 ' 5. ESPERAR Y ABRIR NAVEGADOR
-' Esperamos 5 segundos para que todo esté listo antes de abrir el link
-WScript.Sleep 5000
+' Esperamos 8 segundos para que todo esté listo antes de abrir el link
+WScript.Sleep 8000
 WshShell.Run "http://127.0.0.1:8000"
 
 Set WshShell = Nothing

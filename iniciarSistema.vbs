@@ -15,8 +15,8 @@ WshShell.Run "php artisan serve", 0, False
 ' 3. Iniciar Vite
 WshShell.Run "npm run dev", 0, False
 
-' 4. Esperar 5 segundos para que los servicios levanten
-WScript.Sleep 5000
+' 4. Esperar 8 segundos para que los servicios levanten
+WScript.Sleep 8000
 
 ' 5. Abrir el navegador en el sistema de condominios
 WshShell.Run "http://127.0.0.1:8000"

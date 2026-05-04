@@ -24,11 +24,11 @@ class FacturaController extends Controller
         if ($request->filled('buscar')) {
             $buscar = $request->buscar;
             $query->where('descripcion', 'LIKE', "%$buscar%")
-                  ->orWhere('id', 'LIKE', "%$buscar%")
-                  ->orWhereHas('apartamento', function($q) use ($buscar) {
-                      $q->where('numero', 'LIKE', "%$buscar%")
+                ->orWhere('id', 'LIKE', "%$buscar%")
+                ->orWhereHas('apartamento', function ($q) use ($buscar) {
+                    $q->where('numero', 'LIKE', "%$buscar%")
                         ->orWhere('torre', 'LIKE', "%$buscar%");
-                  });
+                });
         }
 
         $recibos = $query->get();
@@ -43,7 +43,7 @@ class FacturaController extends Controller
         $apartamentos = Apartamento::with(['propietario', 'tipo'])->orderBy('numero')->get();
         // Cargar los gastos con sus detalles para el desglose en JS
         $gastos = GastoMes::with('detalles')->latest()->get();
-        
+
         $tipos = TipoApartamento::orderBy('nombre')->get();
 
         $facturadosPorMes = [];
@@ -62,16 +62,16 @@ class FacturaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'gasto_mes_id'      => 'required|exists:gasto_mes,id',
-            'apartamento_id'    => 'required|exists:apartamentos,id',
+            'gasto_mes_id' => 'required|exists:gasto_mes,id',
+            'apartamento_id' => 'required|exists:apartamentos,id',
             'fecha_vencimiento' => 'required|date',
         ], [
-            'gasto_mes_id.required'      => 'Debe seleccionar un mes de gastos.',
-            'gasto_mes_id.exists'        => 'El mes de gastos seleccionado no es válido.',
-            'apartamento_id.required'    => 'Debe seleccionar un apartamento.',
-            'apartamento_id.exists'      => 'El apartamento seleccionado no es válido.',
+            'gasto_mes_id.required' => 'Debe seleccionar un mes de gastos.',
+            'gasto_mes_id.exists' => 'El mes de gastos seleccionado no es válido.',
+            'apartamento_id.required' => 'Debe seleccionar un apartamento.',
+            'apartamento_id.exists' => 'El apartamento seleccionado no es válido.',
             'fecha_vencimiento.required' => 'La fecha de vencimiento es obligatoria.',
-            'fecha_vencimiento.date'     => 'La fecha de vencimiento no es una fecha válida.',
+            'fecha_vencimiento.date' => 'La fecha de vencimiento no es una fecha válida.',
         ]);
 
         try {
@@ -101,11 +101,11 @@ class FacturaController extends Controller
 
             // Crear Recibo (Factura)
             $factura = Factura::create([
-                'apartamento_id'    => $apartamento->id,
-                'descripcion'       => $descripcion,
-                'monto_total'       => $montoTotal,
-                'saldo_pendiente'   => $montoTotal,
-                'estado'            => 'no_pagado',
+                'apartamento_id' => $apartamento->id,
+                'descripcion' => $descripcion,
+                'monto_total' => $montoTotal,
+                'saldo_pendiente' => $montoTotal,
+                'estado' => 'no_pagado',
                 'fecha_vencimiento' => $request->fecha_vencimiento,
             ]);
 
@@ -148,16 +148,20 @@ class FacturaController extends Controller
      */
     public function storeMasivo(Request $request)
     {
+        // Eliminar límite de tiempo de ejecución para procesamiento masivo (300+ recibos)
+        set_time_limit(0);
+        ini_set('memory_limit', '512M');
+
         $request->validate([
-            'gasto_mes_id'        => 'required|exists:gasto_mes,id',
+            'gasto_mes_id' => 'required|exists:gasto_mes,id',
             'tipo_apartamento_id' => 'required|exists:tipo_apartamentos,id',
-            'fecha_vencimiento'   => 'required|date',
+            'fecha_vencimiento' => 'required|date',
         ], [
-            'gasto_mes_id.required'        => 'Debe seleccionar un mes de gastos.',
-            'gasto_mes_id.exists'          => 'El mes de gastos no es válido.',
+            'gasto_mes_id.required' => 'Debe seleccionar un mes de gastos.',
+            'gasto_mes_id.exists' => 'El mes de gastos no es válido.',
             'tipo_apartamento_id.required' => 'Debe seleccionar un tipo de inmueble.',
-            'tipo_apartamento_id.exists'   => 'El tipo de inmueble no es válido.',
-            'fecha_vencimiento.required'   => 'La fecha de vencimiento es obligatoria.',
+            'tipo_apartamento_id.exists' => 'El tipo de inmueble no es válido.',
+            'fecha_vencimiento.required' => 'La fecha de vencimiento es obligatoria.',
         ]);
 
         try {
@@ -165,8 +169,8 @@ class FacturaController extends Controller
 
             $gastoMes = GastoMes::findOrFail($request->gasto_mes_id);
             $apartamentos = Apartamento::with('tipo')
-                                ->where('tipo_apartamento_id', $request->tipo_apartamento_id)
-                                ->get();
+                ->where('tipo_apartamento_id', $request->tipo_apartamento_id)
+                ->get();
 
             if ($apartamentos->isEmpty()) {
                 return redirect()->back()->withInput()->with('error', 'No hay apartamentos registrados bajo este tipo de inmueble.');
@@ -183,6 +187,7 @@ class FacturaController extends Controller
 
             $generadas = 0;
             $omitidas = 0;
+            $retraso = 0;
 
             foreach ($apartamentos as $apartamento) {
                 // Evitar duplicados
@@ -192,11 +197,11 @@ class FacturaController extends Controller
                 }
 
                 $nuevaFactura = Factura::create([
-                    'apartamento_id'    => $apartamento->id,
-                    'descripcion'       => $descripcion,
-                    'monto_total'       => $montoTotal,
-                    'saldo_pendiente'   => $montoTotal,
-                    'estado'            => 'no_pagado',
+                    'apartamento_id' => $apartamento->id,
+                    'descripcion' => $descripcion,
+                    'monto_total' => $montoTotal,
+                    'saldo_pendiente' => $montoTotal,
+                    'estado' => 'no_pagado',
                     'fecha_vencimiento' => $request->fecha_vencimiento,
                 ]);
 
@@ -213,9 +218,10 @@ class FacturaController extends Controller
                 $apartamento->increment('deuda_actual', $montoTotal);
                 $generadas++;
 
-                // Enviar Correo Masivo
+                // Enviar Correo Masivo con Retraso Programado
                 if ($apartamento->propietario && $apartamento->propietario->email) {
-                    Mail::to($apartamento->propietario->email)->send(new FacturaEmitidaMail($nuevaFactura, $gastoMes));
+                    Mail::to($apartamento->propietario->email)->later(now()->addSeconds($retraso), new FacturaEmitidaMail($nuevaFactura, $gastoMes));
+                    $retraso += 15;
                 }
             }
 
@@ -244,20 +250,21 @@ class FacturaController extends Controller
     public function show(Factura $recibo)
     {
         $apartamento = $recibo->apartamento;
-        
+
         if (!$apartamento) {
             return response(
                 '<div style="font-family: sans-serif; text-align: center; margin-top: 20%; color: #842029; background-color: #f8d7da; padding: 2rem; border-radius: 8px; border: 1px solid #f5c2c7; max-width: 80%; margin-left: auto; margin-right: auto;">' .
                 '<h2 style="margin-top:0;">⚠️ Inmueble No Encontrado</h2>' .
                 '<p>El apartamento asociado a este recibo ya no existe en el sistema.</p>' .
-                '</div>', 
-            404)->header('Content-Type', 'text/html; charset=UTF-8');
+                '</div>',
+                404
+            )->header('Content-Type', 'text/html; charset=UTF-8');
         }
 
         $tipoInmueble = \Illuminate\Support\Str::camel($apartamento->tipo->nombre ?? 'Inmueble');
         $mesFormateado = str_replace('Mensualidad de Condominio - ', '', $recibo->descripcion);
-        $mesAnioPdf = str_replace(' ', '', ucwords($mesFormateado)); 
-        
+        $mesAnioPdf = str_replace(' ', '', ucwords($mesFormateado));
+
         $pdfPath = "recibos/{$tipoInmueble}/{$mesAnioPdf}/recibo_{$recibo->id}_apto_{$apartamento->numero}_{$apartamento->propietario->nombre}_{$apartamento->propietario->apellido}_V{$apartamento->propietario->cedula}.pdf";
 
         if (\Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
@@ -272,14 +279,16 @@ class FacturaController extends Controller
                 $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('emails.recibo', ['recibo' => $recibo, 'gastoMes' => $gastoMes]);
                 return $pdf->stream("recibo_{$recibo->id}.pdf");
             }
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
 
         return response(
             '<div style="font-family: sans-serif; text-align: center; margin-top: 20%; color: #842029; background-color: #f8d7da; padding: 2rem; border-radius: 8px; border: 1px solid #f5c2c7; max-width: 80%; margin-left: auto; margin-right: auto;">' .
             '<h2 style="margin-top:0;">⚠️ PDF No Disponible</h2>' .
             '<p>El documento PDF no se encuentra disponible en los registros ni pudo ser generado dinámicamente.</p>' .
-            '</div>', 
-        404)->header('Content-Type', 'text/html; charset=UTF-8');
+            '</div>',
+            404
+        )->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
     /**
