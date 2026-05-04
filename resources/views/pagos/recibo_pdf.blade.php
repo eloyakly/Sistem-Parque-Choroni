@@ -183,11 +183,13 @@
             <p>Estimado/a <strong>{{ $pago->apartamento->propietario->nombre }}
                     {{ $pago->apartamento->propietario->apellido }}</strong>,</p>
             <p>Se emite el presente recibo como comprobante de pago procesado a favor de su inmueble
-                <strong>{{ $pago->apartamento->numero }}</strong> ({{ $pago->apartamento->torre }}).</p>
+                <strong>{{ $pago->apartamento->numero }}</strong> ({{ $pago->apartamento->torre }}).
+            </p>
 
             <div class="info-box">
                 <p><strong>Propietario:</strong> {{ $pago->apartamento->propietario->nombre }}
-                    {{ $pago->apartamento->propietario->apellido }}</p>
+                    {{ $pago->apartamento->propietario->apellido }}
+                </p>
                 <p><strong>Cédula:</strong> V-{{ $pago->apartamento->propietario->cedula }}</p>
                 <hr>
                 <p><strong>Fecha de Registro:</strong>
@@ -219,7 +221,8 @@
                     <tr>
                         <td colspan="2" class="total-label">Total Abonado:</td>
                         <td style="font-weight: bold; color: #2e7d32; font-size: 12px;">$
-                            {{ number_format($pago->monto, 2) }}</td>
+                            {{ number_format($pago->monto, 2) }}
+                        </td>
                     </tr>
                 </tfoot>
             </table>
@@ -236,7 +239,8 @@
 
         <div class="footer-auto">
             <p>Este es un documento generado automáticamente por el Sistema Integrado de Parque Choroní II el
-                {{ now()->format('d/m/Y h:i A') }}.</p>
+                {{ now()->format('d/m/Y h:i A') }}.
+            </p>
         </div>
     </div>
 </body>

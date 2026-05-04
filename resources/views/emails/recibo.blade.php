@@ -168,8 +168,6 @@
                 <td class="header-info">
                     <h2>Condominio Conjunto Residencial Parque Choroní II</h2>
                     <p>Av. Prolongación 19 de Abril c/ Agustín Zerpa, Urb. Base Aragua, Maracay.</p>
-                    <p style="margin-top: 2px; font-size: 10px; color: #2e7d32; font-weight: bold;">Recibo —
-                        {{ ucfirst($mesRecibo) }}</p>
                 </td>
                 <td class="header-logo">
                     @php
@@ -202,11 +200,13 @@
             <p>Estimado/a <strong>{{ $factura->apartamento->propietario->nombre }}
                     {{ $factura->apartamento->propietario->apellido }}</strong>,</p>
             <p>Se ha emitido un nuevo recibo de condominio correspondiente a su inmueble
-                <strong>{{ $factura->apartamento->numero }}</strong> ({{ $factura->apartamento->torre }}).</p>
+                <strong>{{ $factura->apartamento->numero }}</strong> ({{ $factura->apartamento->torre }}).
+            </p>
 
             <div class="info-box">
                 <p><strong>Propietario:</strong> {{ $factura->apartamento->propietario->nombre }}
-                    {{ $factura->apartamento->propietario->apellido }}</p>
+                    {{ $factura->apartamento->propietario->apellido }}
+                </p>
                 <p><strong>Cédula:</strong> V-{{ $factura->apartamento->propietario->cedula }}</p>
                 <hr>
                 <p><strong>Concepto:</strong> {{ $factura->descripcion }}</p>
@@ -240,7 +240,8 @@
                     <tr>
                         <td colspan="2" class="total-label">Total a Pagar:</td>
                         <td style="font-weight: bold; color: #c62828; font-size: 12px;">$
-                            {{ number_format($factura->monto_total, 2) }}</td>
+                            {{ number_format($factura->monto_total, 2) }}
+                        </td>
                     </tr>
                 </tfoot>
             </table>
@@ -259,7 +260,8 @@
                 RIF: <strong>J-30671165-1</strong>
             </p>
             <p><strong>Reporte de pago:</strong> Enviar el soporte al correo
-                <strong>parquechoroni2.nueva@gmail.com</strong> o al celular <strong>0422-800 73 33</strong>.</p>
+                <strong>parquechoroni2.nueva@gmail.com</strong> o al celular <strong>0422-800 73 33</strong>.
+            </p>
             <p class="nota"> Nota: Se recuerda que con 3 meses de insolvencia, el caso pasará automáticamente al
                 Departamento Legal.</p>
         </div>

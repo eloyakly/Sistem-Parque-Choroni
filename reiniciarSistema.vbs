@@ -11,6 +11,7 @@ WshShell.Run "cmd /c taskkill /f /im php.exe", 0, True
 WshShell.Run "cmd /c taskkill /f /im node.exe", 0, True
 WshShell.Run "cmd /c taskkill /f /im mysqld.exe", 0, True
 
+
 ' 3. LIMPIAR CACHE DE LARAVEL
 ' Esto asegura que si cambiaste algo en el .env o rutas, se actualice
 WshShell.Run "cmd /c php artisan config:clear", 0, True
@@ -21,6 +22,7 @@ WshShell.Run "cmd /c php artisan cache:clear", 0, True
 WshShell.Run "C:\xampp\mysql\bin\mysqld.exe", 0, False
 
 ' Iniciamos Laravel y Vite
+WshShell.Run "php artisan queue:work", 0, False
 WshShell.Run "php artisan serve", 0, False
 WshShell.Run "npm run dev", 0, False
 

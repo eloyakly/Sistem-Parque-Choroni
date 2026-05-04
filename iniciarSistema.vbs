@@ -12,13 +12,16 @@ WshShell.Run "C:\xampp\mysql\bin\mysqld.exe", 0, False
 ' 2. Iniciar Laravel
 WshShell.Run "php artisan serve", 0, False
 
-' 3. Iniciar Vite
+' 3. Iniciar Laravel
+WshShell.Run "php artisan queue:work", 0, False
+
+' 4. Iniciar Vite
 WshShell.Run "npm run dev", 0, False
 
-' 4. Esperar 8 segundos para que los servicios levanten
+' 5. Esperar 8 segundos para que los servicios levanten
 WScript.Sleep 8000
 
-' 5. Abrir el navegador en el sistema de condominios
+' 6. Abrir el navegador en el sistema de condominios
 WshShell.Run "http://127.0.0.1:8000"
 
 Set WshShell = Nothing
