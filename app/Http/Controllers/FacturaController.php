@@ -234,7 +234,7 @@ class FacturaController extends Controller
                     ], $nuevaFactura->id);
 
                     \App\Jobs\ProcesarEnvioCorreoJob::dispatch($log->id)->delay(now()->addSeconds($retraso));
-                    $retraso += 10;
+                    $retraso += 5;
                 }
             }
 

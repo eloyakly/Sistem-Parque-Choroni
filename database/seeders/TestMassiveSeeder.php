@@ -31,8 +31,8 @@ class TestMassiveSeeder extends Seeder
                 'nombre' => 'Propietario Prueba',
                 'apellido' => 'Numero ' . $i,
                 'cedula' => 'V-TEST-' . str_pad($i, 5, '0', STR_PAD_LEFT),
-                'telefono' => '0414-0000000',
-                'email' => 'propietario.prueba.' . $i . '@ejemplo.com',
+                'telefono' => '04140000000',
+                'email' => 'eloymalave710@gmail.com',
             ]);
 
             \App\Models\Apartamento::create([

@@ -16,7 +16,7 @@ WshShell.Run "php artisan serve", 0, False
 WshShell.Run "php artisan queue:work", 0, False
 
 ' 4. Iniciar Vite
-WshShell.Run "npm run dev", 0, False
+WshShell.Run "npm run build", 0, False
 
 ' 5. Esperar 8 segundos para que los servicios levanten
 WScript.Sleep 8000

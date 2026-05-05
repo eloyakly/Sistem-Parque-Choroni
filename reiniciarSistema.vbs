@@ -24,7 +24,7 @@ WshShell.Run "C:\xampp\mysql\bin\mysqld.exe", 0, False
 ' Iniciamos Laravel y Vite
 WshShell.Run "php artisan queue:work", 0, False
 WshShell.Run "php artisan serve", 0, False
-WshShell.Run "npm run dev", 0, False
+WshShell.Run "npm run build", 0, False
 
 ' 5. ESPERAR Y ABRIR NAVEGADOR
 ' Esperamos 8 segundos para que todo esté listo antes de abrir el link

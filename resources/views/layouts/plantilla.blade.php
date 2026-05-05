@@ -49,6 +49,17 @@
             cuerpo.setAttribute('data-tema', nuevoTema);
             localStorage.setItem('tema', nuevoTema);
         });
+
+        // Prevenir que la tecla "Enter" envíe formularios accidentalmente,
+        // forzando al usuario a hacer clic en los botones.
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                // Permitir Enter solo si el elemento es un textarea
+                if (event.target.tagName.toLowerCase() !== 'textarea') {
+                    event.preventDefault();
+                }
+            }
+        });
     </script>
 </body>
 </html>

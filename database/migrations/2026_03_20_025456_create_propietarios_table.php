@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('apellido');
             $table->string('cedula')->unique(); // Cédula, RIF o DNI
             $table->string('telefono')->nullable();
-            $table->string('email')->unique();
+            $table->string('email');
             $table->timestamps();
         });
     }
