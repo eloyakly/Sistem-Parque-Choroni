@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pago;
 use App\Models\Factura;
 use App\Models\Apartamento;
+use App\Models\LogCorreo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -362,9 +363,15 @@ class PagoController extends Controller
             $pdfContent = $pdf->output();
         }
 
-        Mail::to($pago->apartamento->propietario->email)->send(new ReciboPagoMail($pago, $pdfContent));
+        $asunto = 'Comprobante de Pago - Apto ' . ($pago->apartamento->numero ?? '');
 
-        return redirect()->back()->with('exito', 'Recibo de pago enviado exitosamente a ' . $pago->apartamento->propietario->email . '.');
+        $log = LogCorreo::registrarPendiente('recibo_pago', $pago->apartamento->propietario->email, $asunto, [
+            'pago_id' => $pago->id,
+        ], $pago->id);
+
+        \App\Jobs\ProcesarEnvioCorreoJob::dispatch($log->id);
+
+        return redirect()->back()->with('exito', 'El recibo de pago ha sido puesto en cola para envío a ' . $pago->apartamento->propietario->email . '. Puede revisar el Estado de Correos para confirmar el envío.');
     }
 
     /**

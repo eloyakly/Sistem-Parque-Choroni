@@ -1,3 +1,7 @@
+@php
+    $mesRecibo = \Carbon\Carbon::parse($gastoMes->mes_anio)->translatedFormat('F Y');
+    $montoTotal = round($gastoMes->total_gastos * ($tipo->alicuota / 100), 2);
+@endphp
 <!DOCTYPE html>
 <html>
 
@@ -113,6 +117,17 @@
             text-align: right;
         }
 
+        .watermark {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 80px;
+            color: rgba(200, 200, 200, 0.3);
+            z-index: -1;
+            white-space: nowrap;
+        }
+
         .footer-info {
             background: #f8f9fa;
             border: 1px solid #e0e0e0;
@@ -133,6 +148,15 @@
             margin: 2px 0;
         }
 
+        .footer-info .nota {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #ddd;
+            font-weight: bold;
+            color: #c62828;
+            font-size: 9.5px;
+        }
+
         .footer-auto {
             text-align: center;
             font-size: 8px;
@@ -145,6 +169,7 @@
 </head>
 
 <body>
+    <div class="watermark">MUESTRA</div>
     <div class="container">
         {{-- ── HEADER: Título a la izquierda, Logo a la derecha ── --}}
         <table class="header-table">
@@ -152,12 +177,9 @@
                 <td class="header-info">
                     <h2>Condominio Conjunto Residencial Parque Choroní II</h2>
                     <p>Av. Prolongación 19 de Abril c/ Agustín Zerpa, Urb. Base Aragua, Maracay.</p>
-                    <p style="margin-top: 2px; font-size: 10px; color: #2e7d32; font-weight: bold;">Recibo de Pago —
-                        Comprobante Nro: #P-{{ str_pad($pago->id, 5, '0', STR_PAD_LEFT) }}</p>
                 </td>
                 <td class="header-logo">
                     @php
-
                         $logoPath = public_path('logo.png');
                         $logoSrc = '';
                         if (file_exists($logoPath)) {
@@ -180,48 +202,43 @@
 
         {{-- ── CONTENIDO PRINCIPAL ── --}}
         <div class="content">
-            <p>Estimado/a <strong>{{ $pago->apartamento->propietario->nombre }}
-                    {{ $pago->apartamento->propietario->apellido }}</strong>,</p>
-            <p>Se emite el presente recibo como comprobante de pago procesado a favor de su inmueble
-                <strong>{{ $pago->apartamento->numero }}</strong> ({{ $pago->apartamento->torre }}).
+            <p>Estimado/a <strong>PROPIETARIO DE MUESTRA</strong>,</p>
+            <p>Se presenta a continuación el estado de cómo quedaría un recibo de condominio para un inmueble del tipo <strong>{{ $tipo->nombre }}</strong>, basado en los gastos del mes de {{ $mesRecibo }}.
             </p>
 
             <div class="info-box">
-                <p><strong>Propietario:</strong> {{ $pago->apartamento->propietario->nombre }}
-                    {{ $pago->apartamento->propietario->apellido }}
-                </p>
-                <p><strong>Cédula:</strong> V-{{ $pago->apartamento->propietario->cedula }}</p>
+                <p><strong>Tipo de Inmueble:</strong> {{ $tipo->nombre }}</p>
                 <hr>
-                <p><strong>Fecha de Registro:</strong>
-                    {{ \Carbon\Carbon::parse($pago->created_at)->format('d/m/Y h:i A') }}</p>
-                <p><strong>Fecha del Pago:</strong> {{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y') }}</p>
-                <p><strong>Método de Pago:</strong> {{ ucfirst($pago->metodo_pago) }}</p>
-                <p><strong>Referencia:</strong> {{ $pago->referencia ?? 'N/A' }}</p>
+                <p><strong>Concepto:</strong> Muestra de Mensualidad de Condominio - {{ ucfirst($mesRecibo) }}</p>
+                <p><strong>Alícuota Aplicada:</strong> {{ $tipo->alicuota }}%</p>
             </div>
 
             <h4
                 style="color: #444; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin: 10px 0 4px 0; font-size: 11px;">
-                Resumen del Pago</h4>
+                Desglose de Gastos ({{ ucfirst($mesRecibo) }})</h4>
             <table class="desglose">
                 <thead>
                     <tr>
                         <th>Descripción</th>
-                        <th>Estado</th>
-                        <th>Monto Abonado ($)</th>
+                        <th>Costo General ($)</th>
+                        <th>Parte Correspondiente ($)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Abono a Cuenta Inmueble {{ $pago->apartamento->numero }}</td>
-                        <td style="color: #2e7d32; font-weight: bold;">PROCESADO</td>
-                        <td>$ {{ number_format($pago->monto, 2) }}</td>
-                    </tr>
+                    @php $alicuotaDec = $tipo->alicuota / 100; @endphp
+                    @foreach ($gastoMes->detalles as $detalle)
+                        <tr>
+                            <td>{{ $detalle->descripcion }}</td>
+                            <td>$ {{ number_format($detalle->monto, 2) }}</td>
+                            <td>$ {{ number_format($detalle->monto * $alicuotaDec, 2) }}</td>
+                        </tr>
+                    @endforeach
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="2" class="total-label">Total Abonado:</td>
-                        <td style="font-weight: bold; color: #2e7d32; font-size: 12px;">$
-                            {{ number_format($pago->monto, 2) }}
+                        <td colspan="2" class="total-label">Total a Pagar Estimado:</td>
+                        <td style="font-weight: bold; color: #c62828; font-size: 12px;">$
+                            {{ number_format($montoTotal, 2) }}
                         </td>
                     </tr>
                 </tfoot>
@@ -230,17 +247,25 @@
 
         {{-- ── INFORMACIÓN IMPORTANTE (FOOTER) ── --}}
         <div class="footer-info">
-            <h4>Información de la Transacción</h4>
-            <p>Este documento es un comprobante de abono o pago y no sustituye la factura física si ésta resulta
-                requerida por ley.</p>
-            <p>El abono ha sido acreditado a su cuenta y descontado del balance general de deuda de manera
-                satisfactoria.</p>
+            <h4> Información Importante</h4>
+            <p><strong>Plazo de pago:</strong> Se debe realizar dentro de los primeros 5 días del mes.</p>
+            <p><strong>Tasa de cambio:</strong> Se utiliza la tasa del BCV del día en que se realice el pago.</p>
+            <p><strong>Datos bancarios:</strong></p>
+            <p style="padding-left: 12px;">
+                Banco: <strong>Banesco</strong> — Cuenta Corriente<br>
+                Nº <strong>0134-0034-2603-4103-8472</strong><br>
+                A nombre de: <strong>Condominio Resd Parque Choroni II</strong><br>
+                RIF: <strong>J-30671165-1</strong>
+            </p>
+            <p><strong>Reporte de pago:</strong> Enviar el soporte al correo
+                <strong>parquechoroni2.nueva@gmail.com</strong> o al celular <strong>0422-800 73 33</strong>.
+            </p>
+            <p class="nota"> Nota: Se recuerda que con 3 meses de insolvencia, el caso pasará automáticamente al
+                Departamento Legal.</p>
         </div>
 
         <div class="footer-auto">
-            <p>Este es un documento generado automáticamente por el Sistema Integrado de Parque Choroní II el
-                {{ now()->format('d/m/Y h:i A') }}.
-            </p>
+            <p>Este es un documento de muestra generado por el Sistema Integrado de Parque Choroní II.</p>
         </div>
     </div>
 </body>

@@ -10,6 +10,10 @@
 
 <head>
     <style>
+        @page {
+            margin: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
             color: #333;
@@ -20,11 +24,7 @@
         }
 
         .container {
-            max-width: 540px;
-            margin: 0 auto;
-            padding: 12px 16px;
-            border: 1px solid #d0d0d0;
-            border-radius: 8px;
+            padding: 30px 40px;
         }
 
         .header-table {

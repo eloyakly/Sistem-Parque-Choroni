@@ -9,6 +9,7 @@ use App\Http\Controllers\FacturaController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\GastosMensualesController;
+use App\Http\Controllers\LogCorreoController;
 
 Route::get('/', function () {
     return view('acceso');
@@ -32,6 +33,7 @@ Route::middleware([\App\Http\Middleware\CheckSession::class])->group(function ()
     Route::resource('/apartamentos', ApartamentoController::class);
 
     Route::post('/recibos/masiva', [FacturaController::class, 'storeMasivo'])->name('recibos.masiva');
+    Route::get('/recibos/muestra/{tipo_apartamento}/{gasto_mes}', [FacturaController::class, 'muestraRecibo'])->name('recibos.muestra');
     Route::resource('/recibos', FacturaController::class)->names('recibos');
 
     Route::get('/deudores/imprimir', [PagoController::class, 'imprimirDeudores'])->name('pagos.deudores.imprimir');
@@ -50,4 +52,7 @@ Route::middleware([\App\Http\Middleware\CheckSession::class])->group(function ()
     // Rutas de Estado de Cuenta
     Route::get('/estado-cuenta/imprimir', [\App\Http\Controllers\EstadoCuentaController::class, 'imprimir'])->name('estado_cuenta.imprimir');
     Route::get('/estado-cuenta', [\App\Http\Controllers\EstadoCuentaController::class, 'index'])->name('estado_cuenta.index');
+
+    // Log de Correos
+    Route::get('/log-correos', [LogCorreoController::class, 'index'])->name('log-correos.index');
 });

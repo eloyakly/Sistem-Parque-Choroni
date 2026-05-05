@@ -135,8 +135,9 @@
                 </div>
             </div>
 
-            <div style="margin-top: 1.5rem;">
+            <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
                 <button type="button" class="boton boton-primario" onclick="abrirModal(this.closest('form'))">Ejecutar Recibos Masivos</button>
+                <a href="#" id="btn-muestra-masivo" target="_blank" class="boton" style="background: none; color: #2e7d32; display: none;">Ver Muestra del Recibo</a>
             </div>
         </form>
     </div>
@@ -428,6 +429,15 @@
                 conteoAptosMasivo.textContent = conteoAptos;
                 tablaDesgloseMasivo.innerHTML = htmlDesglose;
                 
+                const btnMuestra = document.getElementById('btn-muestra-masivo');
+                if (mesId && tipoId && alicuota > 0) {
+                    btnMuestra.style.display = 'inline-block';
+                    btnMuestra.href = `/recibos/muestra/${tipoId}/${mesId}`;
+                } else {
+                    btnMuestra.style.display = 'none';
+                    btnMuestra.href = '#';
+                }
+
                 const total = base * (alicuota / 100);
                 montoTotalMasivo.textContent = `$ ${total.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             }

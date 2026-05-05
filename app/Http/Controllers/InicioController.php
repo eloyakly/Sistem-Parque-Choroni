@@ -8,6 +8,7 @@ use App\Models\Apartamento;
 use App\Models\Propietario;
 use App\Models\Factura;
 use App\Models\Pago;
+use App\Models\LogCorreo;
 
 class InicioController extends Controller
 {
@@ -38,6 +39,13 @@ class InicioController extends Controller
         $facturasPendientes = Factura::where('estado', 'Pendiente')->count();
         $pagosMes = Pago::whereMonth('fecha_pago', date('m'))->whereYear('fecha_pago', date('Y'))->count();
 
-        return view('inicio.index', compact('totalApartamentos', 'totalPropietarios', 'facturasPendientes', 'pagosMes'));
+        $correosEnviadosHoy = LogCorreo::enviadosHoy();
+        $correosPendientes  = LogCorreo::totalPendientes();
+        $limiteCorreos      = LogCorreo::LIMITE_DIARIO;
+
+        return view('inicio.index', compact(
+            'totalApartamentos', 'totalPropietarios', 'facturasPendientes', 'pagosMes',
+            'correosEnviadosHoy', 'correosPendientes', 'limiteCorreos'
+        ));
     }
 }

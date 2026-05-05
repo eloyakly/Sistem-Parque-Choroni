@@ -6,6 +6,7 @@ use App\Models\Factura;
 use App\Models\Apartamento;
 use App\Models\GastoMes;
 use App\Models\TipoApartamento;
+use App\Models\LogCorreo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -122,9 +123,15 @@ class FacturaController extends Controller
             // Actualizar deuda del apartamento sumando el nuevo recibo
             $apartamento->increment('deuda_actual', $montoTotal);
 
-            // Enviar Correo con Desglose
+            // Enviar Correo con Desglose (En Segundo Plano)
             if ($apartamento->propietario && $apartamento->propietario->email) {
-                Mail::to($apartamento->propietario->email)->send(new FacturaEmitidaMail($factura, $gastoMes));
+                $asunto = 'Recibo de Condominio - ' . ucfirst($mesFormateado);
+                $log = LogCorreo::registrarPendiente('factura', $apartamento->propietario->email, $asunto, [
+                    'factura_id'  => $factura->id,
+                    'gasto_mes_id' => $gastoMes->id,
+                ], $factura->id);
+
+                \App\Jobs\ProcesarEnvioCorreoJob::dispatch($log->id);
             }
 
             // Opcionalmente, marcar el GastoMes como procesado para saber que ya se usó (al menos parcialmente).
@@ -218,10 +225,16 @@ class FacturaController extends Controller
                 $apartamento->increment('deuda_actual', $montoTotal);
                 $generadas++;
 
-                // Enviar Correo Masivo con Retraso Programado
+                // Enviar Correo Masivo con Retraso Programado (5 segundos por iteración)
                 if ($apartamento->propietario && $apartamento->propietario->email) {
-                    Mail::to($apartamento->propietario->email)->later(now()->addSeconds($retraso), new FacturaEmitidaMail($nuevaFactura, $gastoMes));
-                    $retraso += 15;
+                    $asunto = 'Recibo de Condominio - ' . ucfirst($mesFormateado);
+                    $log = LogCorreo::registrarPendiente('factura', $apartamento->propietario->email, $asunto, [
+                        'factura_id'   => $nuevaFactura->id,
+                        'gasto_mes_id' => $gastoMes->id,
+                    ], $nuevaFactura->id);
+
+                    \App\Jobs\ProcesarEnvioCorreoJob::dispatch($log->id)->delay(now()->addSeconds($retraso));
+                    $retraso += 10;
                 }
             }
 
@@ -242,6 +255,20 @@ class FacturaController extends Controller
             DB::rollBack();
             return redirect()->back()->withInput()->with('error', 'Ocurrió un error en la facturación masiva: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Genera un recibo de muestra (PDF) para el tipo de inmueble y mes de gasto.
+     */
+    public function muestraRecibo(TipoApartamento $tipo_apartamento, GastoMes $gasto_mes)
+    {
+        // Cargar vista PDF de muestra
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('tipos_apartamentos.recibo_muestra', [
+            'tipo' => $tipo_apartamento,
+            'gastoMes' => $gasto_mes
+        ]);
+
+        return $pdf->stream("muestra_recibo_{$tipo_apartamento->nombre}_{$gasto_mes->mes_anio}.pdf");
     }
 
     /**

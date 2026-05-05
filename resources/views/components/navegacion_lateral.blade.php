@@ -31,5 +31,8 @@
         <a href="{{ route('estado_cuenta.index') }}" class="item-menu {{ Request::is('estado-cuenta*') ? 'activo' : '' }}">
             <span>📊 Cuentas por Cobrar</span>
         </a>
+        <a href="{{ route('log-correos.index') }}" class="item-menu {{ Request::is('log-correos*') ? 'activo' : '' }}">
+            <span>📧 Estado de Correos</span>
+        </a>
     </nav>
 </aside>
