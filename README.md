@@ -100,6 +100,9 @@ php artisan serve   # Backend: http://localhost:8000
 npm run dev         # Frontend (Vite)
 php artisan queue:work
 
+
+
+php artisan migrate:fresh (Borran todo antes de empezar).
 ```
 
 ---
