@@ -145,30 +145,6 @@ resources/views/
 
 ---
 
-## 🎨 Sistema de Diseño
-
-Los estilos se gestionan en `resources/css/app.css` usando **CSS nativo con variables** para soportar los dos temas:
-
-```css
-/* Tema Claro */
-:root { --color-fondo: #f8f9fa; --color-acentuar: #0984e3; ... }
-
-/* Tema Oscuro */
-[data-tema="oscuro"] { --color-fondo: #121212; --color-acentuar: #3498db; ... }
-```
-
-El tema se guarda en `localStorage` y se aplica automáticamente al recargar. El usuario lo cambia con el botón 🌓 en la barra superior.
-
----
-
-## 🏷️ Convenciones del Proyecto
-
-- **Nombres en español**: vistas, componentes, clases CSS, rutas con nombre.
-- **Clases CSS en español**: `.boton`, `.boton-primario`, `.tarjeta`, `.barra-lateral`, `.item-menu`, etc.
-- **Rutas resource en español**: `/propietarios`, `/apartamentos`, `/gastos-mensuales`, etc.
-
----
-
 ## 📡 Rutas Disponibles
 
 | Método   | URI                   | Nombre                 | Descripción                  |
@@ -191,7 +167,6 @@ El tema se guarda en `localStorage` y se aplica automáticamente al recargar. El
 - **Frontend**: Blade + CSS nativo + JavaScript vanilla
 - **Base de datos**: MySQL
 - **Bundler**: Vite
-- **Tipografía**: Inter (Google Fonts)
 
 ---
 
