@@ -12,8 +12,14 @@ WshShell.Run "C:\xampp\mysql\bin\mysqld.exe", 0, False
 ' 2. Iniciar Laravel
 WshShell.Run "php artisan serve", 0, False
 
-' 3. Iniciar Laravel
+' 3. Iniciar Cola de correos
 WshShell.Run "php artisan queue:work", 0, False
+
+' 3.1. Iniciar el Reloj del sistema (por si la dejan prendida)
+WshShell.Run "php artisan schedule:work", 0, False
+
+' 3.2. Forzar envío de pendientes al encender (por si la prendieron después de las 8 AM)
+WshShell.Run "php artisan correos:enviar-pendientes", 0, False
 
 ' 4. Iniciar Vite
 WshShell.Run "npm run build", 0, False

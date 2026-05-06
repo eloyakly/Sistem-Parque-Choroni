@@ -21,10 +21,12 @@ WshShell.Run "cmd /c php artisan cache:clear", 0, True
 ' Iniciamos MySQL de XAMPP (Ajusta la ruta si es necesario)
 WshShell.Run "C:\xampp\mysql\bin\mysqld.exe", 0, False
 
-' Iniciamos Laravel y Vite
+' Iniciamos Laravel, Vite y utilidades
 WshShell.Run "php artisan queue:work", 0, False
+WshShell.Run "php artisan schedule:work", 0, False
 WshShell.Run "php artisan serve", 0, False
 WshShell.Run "npm run build", 0, False
+WshShell.Run "php artisan correos:enviar-pendientes", 0, False
 
 ' 5. ESPERAR Y ABRIR NAVEGADOR
 ' Esperamos 8 segundos para que todo esté listo antes de abrir el link

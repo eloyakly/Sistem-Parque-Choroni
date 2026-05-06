@@ -29,7 +29,7 @@ class LogCorreo extends Model
      */
     public static function enviadosHoy(): int
     {
-        return static::whereDate('created_at', today())
+        return static::whereDate('updated_at', today())
             ->where('estado', 'enviado')
             ->count();
     }

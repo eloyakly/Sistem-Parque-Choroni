@@ -103,6 +103,9 @@ php artisan queue:work
 
 
 php artisan migrate:fresh (Borran todo antes de empezar).
+
+cargar para probar los correos
+php artisan db:seed --class=TestMassiveSeeder
 ```
 
 ---
