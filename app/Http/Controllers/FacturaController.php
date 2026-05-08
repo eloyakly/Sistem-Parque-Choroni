@@ -123,7 +123,7 @@ class FacturaController extends Controller
             // Actualizar deuda del apartamento sumando el nuevo recibo
             $apartamento->increment('deuda_actual', $montoTotal);
 
-            // Enviar Correo con Desglose (En Segundo Plano)
+            // Enviar Correo con Desglose (respetando límite diario)
             if ($apartamento->propietario && $apartamento->propietario->email) {
                 $asunto = 'Recibo de Condominio - ' . ucfirst($mesFormateado);
                 $log = LogCorreo::registrarPendiente('factura', $apartamento->propietario->email, $asunto, [
@@ -131,7 +131,10 @@ class FacturaController extends Controller
                     'gasto_mes_id' => $gastoMes->id,
                 ], $factura->id);
 
-                \App\Jobs\ProcesarEnvioCorreoJob::dispatch($log->id);
+                // Solo despachar job si hay cupo diario; si no, queda pendiente para envío automático al día siguiente
+                if (LogCorreo::puedeEnviarHoy()) {
+                    \App\Jobs\ProcesarEnvioCorreoJob::dispatch($log->id);
+                }
             }
 
             // Opcionalmente, marcar el GastoMes como procesado para saber que ya se usó (al menos parcialmente).
@@ -225,7 +228,7 @@ class FacturaController extends Controller
                 $apartamento->increment('deuda_actual', $montoTotal);
                 $generadas++;
 
-                // Enviar Correo Masivo con Retraso Programado (5 segundos por iteración)
+                // Enviar Correo Masivo (respetando límite diario, retraso de 5s entre cada uno)
                 if ($apartamento->propietario && $apartamento->propietario->email) {
                     $asunto = 'Recibo de Condominio - ' . ucfirst($mesFormateado);
                     $log = LogCorreo::registrarPendiente('factura', $apartamento->propietario->email, $asunto, [
@@ -233,8 +236,11 @@ class FacturaController extends Controller
                         'gasto_mes_id' => $gastoMes->id,
                     ], $nuevaFactura->id);
 
-                    \App\Jobs\ProcesarEnvioCorreoJob::dispatch($log->id)->delay(now()->addSeconds($retraso));
-                    $retraso += 5;
+                    // Solo despachar job si hay cupo diario; los excedentes quedan pendientes para envío automático al día siguiente
+                    if (LogCorreo::puedeEnviarHoy()) {
+                        \App\Jobs\ProcesarEnvioCorreoJob::dispatch($log->id)->delay(now()->addSeconds($retraso));
+                        $retraso += 5;
+                    }
                 }
             }
 

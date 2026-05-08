@@ -53,7 +53,7 @@
         <div class="tarjeta" style="border-left: 4px solid {{ $totalPend > 0 ? '#e67e22' : '#27ae60' }}; padding: 1.2rem;">
             <p style="margin: 0; font-size: 0.8rem; color: var(--color-texto-secundario); text-transform: uppercase; letter-spacing: 0.05em;">Pendientes</p>
             <p style="margin: 0.3rem 0 0; font-size: 2rem; font-weight: 700; color: {{ $totalPend > 0 ? '#e67e22' : '#27ae60' }};">{{ $totalPend }}</p>
-            <p style="margin: 0; font-size: 0.75rem; color: var(--color-texto-secundario);">se enviarán a las 8:00 AM</p>
+            <p style="margin: 0; font-size: 0.75rem; color: var(--color-texto-secundario);">se enviarán al inicio del próximo día</p>
         </div>
     </div>
 
@@ -111,7 +111,7 @@
                         <th style="padding: 0.8rem 1rem;">Tipo</th>
                         <th style="padding: 0.8rem 1rem;">Destinatario</th>
                         <th style="padding: 0.8rem 1rem;">Asunto</th>
-                        <th style="padding: 0.8rem 1rem;">Fecha y Hora</th>
+                        <th style="padding: 0.8rem 1rem;">Procesado</th>
                         <th style="padding: 0.8rem 1rem;">Error</th>
                     </tr>
                 </thead>
@@ -141,7 +141,7 @@
                             <td style="padding: 0.7rem 1rem;">{{ $log->destinatario }}</td>
                             <td style="padding: 0.7rem 1rem; font-size: 0.85rem;">{{ $log->asunto ?? '—' }}</td>
                             <td style="padding: 0.7rem 1rem; white-space: nowrap; font-size: 0.85rem; color: var(--color-texto-secundario);">
-                                {{ \Carbon\Carbon::parse($log->created_at)->format('d/m/Y h:i A') }}
+                                {{ \Carbon\Carbon::parse($log->updated_at)->format('d/m/Y h:i A') }}
                             </td>
                             <td style="padding: 0.7rem 1rem; font-size: 0.8rem; color: #e74c3c; max-width: 250px; word-break: break-word;">
                                 {{ $log->error ?? '—' }}

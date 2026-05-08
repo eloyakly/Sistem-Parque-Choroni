@@ -9,7 +9,7 @@ class LogCorreoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = LogCorreo::latest();
+        $query = LogCorreo::latest('updated_at');
 
         if ($request->filled('estado')) {
             $query->where('estado', $request->estado);
@@ -20,7 +20,7 @@ class LogCorreoController extends Controller
         }
 
         if ($request->filled('fecha')) {
-            $query->whereDate('created_at', $request->fecha);
+            $query->whereDate('updated_at', $request->fecha);
         }
 
         if ($request->filled('correo')) {
@@ -29,9 +29,10 @@ class LogCorreoController extends Controller
 
         $logs = $query->simplePaginate(50);
 
-        $enviadosHoy   = LogCorreo::whereDate('created_at', today())->where('estado', 'enviado')->count();
-        $fallidos      = LogCorreo::whereDate('created_at', today())->where('estado', 'fallido')->count();
-        $omitidosHoy   = LogCorreo::whereDate('created_at', today())->where('estado', 'omitido')->count();
+        // Usar updated_at para reflejar cuándo realmente se procesó el correo (no cuándo se creó el log)
+        $enviadosHoy   = LogCorreo::whereDate('updated_at', today())->where('estado', 'enviado')->count();
+        $fallidos      = LogCorreo::whereDate('updated_at', today())->where('estado', 'fallido')->count();
+        $omitidosHoy   = LogCorreo::whereDate('updated_at', today())->where('estado', 'omitido')->count();
         $limiteDisponible = max(0, LogCorreo::LIMITE_DIARIO - $enviadosHoy);
 
         return view('log_correos.index', compact(

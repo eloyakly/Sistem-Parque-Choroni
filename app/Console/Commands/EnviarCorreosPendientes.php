@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Mail;
 class EnviarCorreosPendientes extends Command
 {
     protected $signature   = 'correos:enviar-pendientes';
-    protected $description = 'Envía los correos pendientes del día anterior respetando el límite diario de ' . LogCorreo::LIMITE_DIARIO;
+    protected $description = 'Envía los correos pendientes respetando el límite diario de ' . LogCorreo::LIMITE_DIARIO . '. Se ejecuta automáticamente a las 00:01.';
 
     public function handle(): int
     {
@@ -36,7 +36,7 @@ class EnviarCorreosPendientes extends Command
             return self::SUCCESS;
         }
 
-        $this->info("Cupo disponible: {$cupoDisponible}. Procesando {$pendientes->count()} correo(s) pendiente(s)...");
+        $this->info("Nuevo día — Cupo disponible: {$cupoDisponible}. Procesando {$pendientes->count()} correo(s) pendiente(s)...");
 
         $enviados = 0;
         $fallidos = 0;
@@ -75,6 +75,11 @@ class EnviarCorreosPendientes extends Command
                 $log->update(['estado' => 'enviado', 'error' => null, 'datos_extra' => null]);
                 $enviados++;
                 $this->line("  ✅ Enviado a {$log->destinatario}");
+
+                // Pausa de 5 segundos entre correos para evitar saturación de Gmail
+                if ($enviados < $pendientes->count()) {
+                    sleep(5);
+                }
 
             } catch (\Exception $e) {
                 $log->update(['estado' => 'fallido', 'error' => 'Reintento fallido: ' . $e->getMessage()]);

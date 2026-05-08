@@ -209,7 +209,7 @@
             <div class="info-box">
                 <p><strong>Tipo de Inmueble:</strong> {{ $tipo->nombre }}</p>
                 <hr>
-                <p><strong>Concepto:</strong> Muestra de Mensualidad de Condominio - {{ ucfirst($mesRecibo) }}</p>
+                <p><strong>Concepto:</strong> Mensualidad de Condominio - {{ ucfirst($mesRecibo) }}</p>
                 <p><strong>Alícuota Aplicada:</strong> {{ $tipo->alicuota }}%</p>
             </div>
 

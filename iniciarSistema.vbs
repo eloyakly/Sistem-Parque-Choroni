@@ -9,25 +9,28 @@ WshShell.CurrentDirectory = strPath
 ' El "0" al final oculta la ventana
 WshShell.Run "C:\xampp\mysql\bin\mysqld.exe", 0, False
 
-' 2. Iniciar Laravel
+' 2. Iniciar servidor Vite (en segundo plano)
+WshShell.Run "cmd /c npm run dev", 0, False
+
+' 3. Esperar 3 segundos para que MySQL esté listo
+WScript.Sleep 3000
+
+' 4. Iniciar Laravel
 WshShell.Run "php artisan serve", 0, False
 
-' 3. Iniciar Cola de correos
+' 5. Iniciar Cola de correos
 WshShell.Run "php artisan queue:work", 0, False
 
-' 3.1. Iniciar el Reloj del sistema (por si la dejan prendida)
+' 5.1. Iniciar el Reloj del sistema (por si la dejan prendida)
 WshShell.Run "php artisan schedule:work", 0, False
 
-' 3.2. Forzar envío de pendientes al encender (por si la prendieron después de las 8 AM)
+' 5.2. Forzar envío de pendientes al encender (los pendientes se procesan a las 00:01 o al iniciar)
 WshShell.Run "php artisan correos:enviar-pendientes", 0, False
 
-' 4. Iniciar Vite
-WshShell.Run "npm run build", 0, False
+' 6. Esperar 5 segundos para que el servidor levante
+WScript.Sleep 5000
 
-' 5. Esperar 8 segundos para que los servicios levanten
-WScript.Sleep 8000
-
-' 6. Abrir el navegador en el sistema de condominios
+' 7. Abrir el navegador en el sistema de condominios
 WshShell.Run "http://127.0.0.1:8000"
 
 Set WshShell = Nothing

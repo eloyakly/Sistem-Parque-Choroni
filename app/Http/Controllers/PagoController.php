@@ -365,13 +365,23 @@ class PagoController extends Controller
 
         $asunto = 'Comprobante de Pago - Apto ' . ($pago->apartamento->numero ?? '');
 
+        // Registrar como pendiente y despachar solo si hay cupo diario disponible
+        if (LogCorreo::puedeEnviarHoy()) {
+            $log = LogCorreo::registrarPendiente('recibo_pago', $pago->apartamento->propietario->email, $asunto, [
+                'pago_id' => $pago->id,
+            ], $pago->id);
+
+            \App\Jobs\ProcesarEnvioCorreoJob::dispatch($log->id);
+
+            return redirect()->back()->with('exito', 'El recibo de pago ha sido puesto en cola para envío a ' . $pago->apartamento->propietario->email . '. Puede revisar el Estado de Correos para confirmar el envío.');
+        }
+
+        // Sin cupo: registrar pendiente para envío automático al día siguiente
         $log = LogCorreo::registrarPendiente('recibo_pago', $pago->apartamento->propietario->email, $asunto, [
             'pago_id' => $pago->id,
         ], $pago->id);
 
-        \App\Jobs\ProcesarEnvioCorreoJob::dispatch($log->id);
-
-        return redirect()->back()->with('exito', 'El recibo de pago ha sido puesto en cola para envío a ' . $pago->apartamento->propietario->email . '. Puede revisar el Estado de Correos para confirmar el envío.');
+        return redirect()->back()->with('exito', 'Límite diario de correos alcanzado. El recibo para ' . $pago->apartamento->propietario->email . ' se enviará automáticamente al inicio del próximo día.');
     }
 
     /**

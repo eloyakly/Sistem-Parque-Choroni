@@ -22,7 +22,7 @@ class LogCorreo extends Model
         'datos_extra' => 'array',
     ];
 
-    const LIMITE_DIARIO = 80;
+    const LIMITE_DIARIO = 90;
 
     /**
      * Cuenta cuántos correos se han enviado exitosamente hoy.

@@ -8,5 +8,8 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
 
-// Enviar correos pendientes cada día a las 8:00 AM
-Schedule::command('correos:enviar-pendientes')->dailyAt('08:00');
+// Enviar correos pendientes automáticamente apenas inicia el nuevo día (cupos frescos)
+Schedule::command('correos:enviar-pendientes')->dailyAt('00:01');
+
+// Reintento cada hora durante el día por si el sistema se encendió tarde o quedaron pendientes
+Schedule::command('correos:enviar-pendientes')->hourly();
